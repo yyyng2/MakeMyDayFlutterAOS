@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "168273438981",
+    "project_id": "makemyday-d00f1",
+    "storage_bucket": "makemyday-d00f1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168273438981:android:38a0ab011b75ba36aa2f6c",
+        "android_client_info": {
+          "package_name": "io.github.yyyng2.make_my_day"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDc96y72CwTME5D2jczI6q6ur4FeIEVIbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
