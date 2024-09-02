@@ -27,7 +27,7 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
 
     print(test.toList().first.date);
 
-    print('startOfMonth: $startOfMonth\nendOfMonth: $endOfMonth');
+    // print('startOfMonth: $startOfMonth\nendOfMonth: $endOfMonth');
     final results = database.query<ScheduleEntity>(
       'date BETWEEN {\$0, \$1} SORT(date ASC)',
       [startOfMonth, endOfMonth],
@@ -44,9 +44,9 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
 
     final endOfDay = startOfDay.add(const Duration(days: 1)).subtract(const Duration(microseconds: 1));
 
-    print('selectedDate: $selectedDate\nstartOfDay: $startOfDay\nendOfDay: $endOfDay');
+    // print('selectedDate: $selectedDate\nstartOfDay: $startOfDay\nendOfDay: $endOfDay');
     final results = database.query<ScheduleEntity>(
-      'date BETWEEN {\$0, \$1} SORT (date DESC)',
+      'date BETWEEN {\$0, \$1} SORT (date ASC)',
       [startOfDay, endOfDay],
     );
     return results.toList();

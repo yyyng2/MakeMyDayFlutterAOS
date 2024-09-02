@@ -121,6 +121,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'scheduleScreen',
         onPressed: () {
           Navigator.pushNamed(context, AppRouter.scheduleWrite, arguments: {
             'isEdit': false,

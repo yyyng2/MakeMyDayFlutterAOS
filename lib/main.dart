@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'infrastructure/service/route_observer_service.dart';
 import 'feature/commonFeature/presentation/navigation/app_router.dart';
 import 'firebase_options.dart';
 
@@ -12,18 +13,20 @@ void main() {
   );
   MobileAds.instance.initialize();
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+  final RouteObserverService routeObserverService = RouteObserverService();
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       onGenerateRoute: AppRouter.generateRoute,
       initialRoute: AppRouter.splash,
+      navigatorObservers: [routeObserverService],
     );
   }
 }

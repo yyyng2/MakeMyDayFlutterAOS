@@ -42,6 +42,21 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
     super.dispose();
   }
 
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked.toLocal();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,20 +127,7 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
           children: [
             TextButton(
               onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2101),
-                );
-
-                if (picked != null && picked != selectedDate) {
-                  setState(() {
-                    print(picked);
-                    selectedDate = picked.toLocal();
-                    print(selectedDate);
-                  });
-                }
+                _selectDate();
               },
               child: Text(
                 DateFormat('yyyy-MM-dd').format(selectedDate),

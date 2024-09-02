@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:make_my_day/feature/ddayFeature/presentation/bloc/dday_bloc.dart';
+import 'package:make_my_day/feature/homeFeature/presentation/bloc/home_bloc.dart';
+import 'package:make_my_day/feature/scheduleFeature/presentation/bloc/schedule_bloc.dart';
 
 import '../../commonFeature/data/datasources/common_local_datasource.dart';
 import '../data/datasources/main_tab_local_datasource.dart';
@@ -31,6 +34,9 @@ class MainTabScreenState extends State<MainTabScreen> {
   late final MainTabRepositoryImpl mainTabRepositoryImpl;
   late final MainTabUsecase mainTabUsecase;
 
+  final GlobalKey<HomeScreenState> _homeScreenKey = GlobalKey<HomeScreenState>();
+  final GlobalKey<ScheduleScreenState> _scheduleScreenKey = GlobalKey<ScheduleScreenState>();
+  final GlobalKey<DdayScreenState> _ddayScreenKey = GlobalKey<DdayScreenState>();
 
   @override
   void initState() {
@@ -161,11 +167,11 @@ class MainTabScreenState extends State<MainTabScreen> {
                     Expanded(
                       child: IndexedStack(
                         index: _selectedIndex,
-                        children: const [
-                          HomeScreen(),
-                          ScheduleScreen(),
-                          DdayScreen(),
-                          SettingsScreen(),
+                        children: [
+                          HomeScreen(key: _homeScreenKey),
+                          ScheduleScreen(key: _scheduleScreenKey,),
+                          DdayScreen(key: _ddayScreenKey,),
+                          const SettingsScreen(),
                         ],
                       ),
                     ),
@@ -189,6 +195,14 @@ class MainTabScreenState extends State<MainTabScreen> {
                   onTap: (index) {
                     setState(() {
                       _selectedIndex = index;
+
+                      if (index == 0) {
+                        _homeScreenKey.currentState?.homeBloc.add(FetchHomeItems(DateTime.now()));
+                      } else if (index == 1) {
+                        _scheduleScreenKey.currentState?.scheduleBloc.add(FetchScheduleItemsByDate(DateTime.now()));
+                      } else if (index == 2) {
+                        _ddayScreenKey.currentState?.ddayBloc.add(FetchDdayItems());
+                      }
                     });
                   },
                   selectedItemColor: isDarkMode ? Colors.white : Colors.black,

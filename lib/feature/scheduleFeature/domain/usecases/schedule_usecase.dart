@@ -16,18 +16,15 @@ class ScheduleUsecase {
     return await repository.fetchScheduleItemsByDate(selectedDate);
   }
 
-  Future<void> addScheduleItem(ScheduleEntity item, DateTime month) async {
+  Future<void> addScheduleItem(ScheduleEntity item) async {
     await repository.addScheduleItem(item);
-    fetchScheduleItems(month);
   }
 
-  Future<void> updateScheduleItem(ObjectId id, ScheduleEntity item, DateTime month) async {
+  Future<void> updateScheduleItem(ObjectId id, ScheduleEntity item) async {
     await repository.updateScheduleItem(id, item);
-    fetchScheduleItems(month);
   }
 
-  Future<void> deleteScheduleItem(ObjectId id, DateTime month) async {
+  Future<void> deleteScheduleItem(ObjectId id) async {
     await repository.deleteScheduleItem(id);
-    fetchScheduleItems(month);
   }
 }

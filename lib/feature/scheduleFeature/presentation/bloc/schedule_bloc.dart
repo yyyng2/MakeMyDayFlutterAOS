@@ -1,9 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:make_my_day/feature/scheduleFeature/domain/usecases/schedule_usecase.dart';
 import 'package:realm/realm.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/schedule_entity.dart';
+import '../../domain/usecases/schedule_usecase.dart';
 
 part 'schedule_event.dart';
 part 'schedule_state.dart';
@@ -46,7 +46,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onAddScheduleItem(
       AddScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
-      await usecase.addScheduleItem(event.item, event.month);
+      await usecase.addScheduleItem(event.item);
       add(FetchScheduleItems(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to add schedule item"));
@@ -56,7 +56,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onUpdateScheduleItem(
       UpdateScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
-      await usecase.updateScheduleItem(event.id, event.item, event.month);
+      await usecase.updateScheduleItem(event.id, event.item);
       add(FetchScheduleItems(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to update schedule item"));
@@ -66,8 +66,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onDeleteScheduleItem(
       DeleteScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
-      await usecase.deleteScheduleItem(event.id, event.month);
-      add(FetchScheduleItems(event.month)); // Refetch items after deleting
+      await usecase.deleteScheduleItem(event.id);
+      add(FetchScheduleItems(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to delete schedule item"));
     }
