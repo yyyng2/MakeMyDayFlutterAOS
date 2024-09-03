@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -19,7 +21,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(HomeLoading());
     try {
       final items = await usecase.fetchHomeItems(event.date);
-      emit(HomeLoaded(items));
+      final nickname = await usecase.fetchNickname();
+      final profileImage = await usecase.fetchProfileImage();
+      emit(HomeLoaded(items, nickname, profileImage));
     } catch (e) {
       emit(const HomeError("Failed to load home items"));
     }

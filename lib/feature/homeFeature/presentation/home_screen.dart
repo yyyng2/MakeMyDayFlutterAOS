@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:make_my_day/feature/commonFeature/data/datasources/common_local_datasource.dart';
+import 'package:make_my_day/feature/homeFeature/data/datasources/home_local_datasource.dart';
+import 'package:make_my_day/feature/homeFeature/data/repositories/home_repository_impl.dart';
 import 'package:realm/realm.dart';
 
 import '../../commonFeature/presentation/navigation/app_router.dart';
@@ -23,6 +28,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
+  final CommonLocalDatasource commonLocalDatasource = CommonLocalDatasource();
+  late HomeLocalDatasource homeLocalDatasource;
+  late HomeRepositoryImpl homeRepositoryImpl;
   late Realm realm;
   late DdayRepositoryImpl ddayRepositoryImpl;
   late ScheduleRepositoryImpl scheduleRepositoryImpl;
@@ -39,8 +47,11 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    final config = Configuration.local([DdayEntity.schema, ScheduleEntity.schema]);
+    homeLocalDatasource = HomeLocalDatasource(CommonLocalDatasource());
+    final config =
+        Configuration.local([DdayEntity.schema, ScheduleEntity.schema]);
     realm = Realm(config);
+    homeRepositoryImpl = HomeRepositoryImpl(datasource: homeLocalDatasource);
     ddayRepositoryImpl = DdayRepositoryImpl(realm);
     scheduleRepositoryImpl = ScheduleRepositoryImpl(realm);
     scheduleUsecase = ScheduleUsecase(repository: scheduleRepositoryImpl);
@@ -48,6 +59,7 @@ class HomeScreenState extends State<HomeScreen> {
     ddayUsecase = DdayUsecase(repository: ddayRepositoryImpl);
     ddayBloc = DdayBloc(ddayUsecase);
     homeUsecase = HomeUsecase(
+      homeRepository: homeRepositoryImpl,
       ddayRepository: ddayRepositoryImpl,
       scheduleRepository: scheduleRepositoryImpl,
     );
@@ -96,16 +108,23 @@ class HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               MessageView(
-                                topMessage: DateFormat('yyyy-MM-dd EEE').format(DateTime.now()),
+                                profileImageInfo: state.profileImage,
+                                nickname: state.nickname,
+                                topMessage: DateFormat('yyyy-MM-dd EEE')
+                                    .format(DateTime.now()),
                                 bottomMessage: 'Welcome',
                               ),
                               if (state.homeItems.scheduleItems.isEmpty)
-                                const MessageView(
+                                MessageView(
+                                  profileImageInfo: state.profileImage,
+                                  nickname: state.nickname,
                                   topMessage: "오늘의 일정이 없어요.",
                                   bottomMessage: "오늘의 일정을 추가해보세요.",
                                 )
                               else ...[
                                 OneMessageView(
+                                  profileImageInfo: state.profileImage,
+                                  nickname: state.nickname,
                                   showImage: true,
                                   showDday: false,
                                   showDate: false,
@@ -127,6 +146,8 @@ class HomeScreenState extends State<HomeScreen> {
                                       );
                                     },
                                     child: OneMessageView(
+                                      profileImageInfo: state.profileImage,
+                                      nickname: state.nickname,
                                       showImage: false,
                                       showDday: false,
                                       showDate: true,
@@ -137,12 +158,16 @@ class HomeScreenState extends State<HomeScreen> {
                                   ),
                               ],
                               if (state.homeItems.ddayItems.isEmpty)
-                                const MessageView(
+                                MessageView(
+                                  profileImageInfo: state.profileImage,
+                                  nickname: state.nickname,
                                   topMessage: "등록된 디데이가 없어요.",
                                   bottomMessage: "디데이를 추가해보세요.",
                                 )
                               else ...[
                                 OneMessageView(
+                                  profileImageInfo: state.profileImage,
+                                  nickname: state.nickname,
                                   showImage: true,
                                   showDday: false,
                                   showDate: false,
@@ -165,6 +190,8 @@ class HomeScreenState extends State<HomeScreen> {
                                         );
                                       },
                                       child: OneMessageView(
+                                        profileImageInfo: state.profileImage,
+                                        nickname: state.nickname,
                                         showImage: false,
                                         showDday: true,
                                         showDate: true,
@@ -206,18 +233,22 @@ class HomeScreenState extends State<HomeScreen> {
                     builder: (context) {
                       return HomeWriteButtonView(
                         onSchedulePressed: () {
-                          Navigator.pushNamed(context, AppRouter.scheduleWrite, arguments: {
-                            'isEdit': false,
-                            'scheduleObject': ScheduleEntity(ObjectId(), '', currentDate),
-                            'scheduleBloc': scheduleBloc
-                          });
+                          Navigator.pushNamed(context, AppRouter.scheduleWrite,
+                              arguments: {
+                                'isEdit': false,
+                                'scheduleObject':
+                                    ScheduleEntity(ObjectId(), '', currentDate),
+                                'scheduleBloc': scheduleBloc
+                              });
                         },
                         onDdayPressed: () {
-                          Navigator.pushNamed(context, AppRouter.ddayWrite, arguments: {
-                            'isEdit': false,
-                            'ddayObject': DdayEntity(ObjectId(), '', DateTime.now(), true),
-                            'ddayBloc': ddayBloc
-                          });
+                          Navigator.pushNamed(context, AppRouter.ddayWrite,
+                              arguments: {
+                                'isEdit': false,
+                                'ddayObject': DdayEntity(
+                                    ObjectId(), '', DateTime.now(), true),
+                                'ddayBloc': ddayBloc
+                              });
                         },
                       );
                     },
@@ -236,10 +267,14 @@ class HomeScreenState extends State<HomeScreen> {
 }
 
 class MessageView extends StatelessWidget {
+  final Map<String, dynamic> profileImageInfo;
+  final String nickname;
   final String topMessage;
   final String bottomMessage;
 
   const MessageView({
+    required this.profileImageInfo,
+    required this.nickname,
     required this.topMessage,
     required this.bottomMessage,
     super.key,
@@ -247,35 +282,63 @@ class MessageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ImageProvider imageProvider;
+
+    if (profileImageInfo['isFile'] == true) {
+      imageProvider = FileImage(profileImageInfo['image'] as File);
+    } else {
+      imageProvider = AssetImage(profileImageInfo['image'] as String);
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Column(
             children: [
-              Image.asset(
-                'assets/images/dicon/day_color.png',
-                width: 50,
-                height: 50,
+              CircleAvatar(
+                radius: 25,
+                backgroundImage: imageProvider,
+                backgroundColor: Colors.transparent,
               ),
-              const Text("D"),
+              Text(
+                nickname,
+                style: const TextStyle(
+                  fontSize: 7,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+                softWrap: true,
+                overflow: TextOverflow.visible,
+              ),
             ],
           ),
           const SizedBox(width: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.0),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    topMessage,
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                  ),
+                  Text(
+                    bottomMessage,
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                  ),
+                ],
+              ),
             ),
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(topMessage),
-              Text(bottomMessage),
-            ],
-          ),
-          ),
+          )
         ],
       ),
     );
@@ -283,6 +346,8 @@ class MessageView extends StatelessWidget {
 }
 
 class OneMessageView extends StatelessWidget {
+  final Map<String, dynamic> profileImageInfo;
+  final String nickname;
   final bool showImage;
   final bool showDday;
   final bool showDate;
@@ -291,6 +356,8 @@ class OneMessageView extends StatelessWidget {
   final DateTime date;
 
   const OneMessageView({
+    required this.profileImageInfo,
+    required this.nickname,
     required this.showImage,
     required this.showDday,
     required this.showDate,
@@ -304,7 +371,8 @@ class OneMessageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
 
-    var differenceInDays = date.difference(DateTime(now.year, now.month, now.day)).inDays;
+    var differenceInDays =
+        date.difference(DateTime(now.year, now.month, now.day)).inDays;
 
     if (plusDay) {
       differenceInDays = differenceInDays - 1;
@@ -318,51 +386,88 @@ class OneMessageView extends StatelessWidget {
     } else {
       ddayText = "D+${differenceInDays.abs()}";
     }
+
+    ImageProvider imageProvider;
+
+    if (profileImageInfo['isFile'] == true) {
+      imageProvider = FileImage(profileImageInfo['image'] as File);
+    } else {
+      imageProvider = AssetImage(profileImageInfo['image'] as String);
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (showImage)
             Column(
               children: [
-                Image.asset(
-                  'assets/images/dicon/day_color.png',
-                  width: 50,
-                  height: 50,
+                CircleAvatar(
+                  radius: 25,
+                  backgroundImage: imageProvider,
+                  backgroundColor: Colors.transparent,
                 ),
-                const Text("D"),
+                Text(
+                  nickname,
+                  style: const TextStyle(
+                    fontSize: 7,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  softWrap: true,
+                  overflow: TextOverflow.visible,
+                ),
               ],
             )
           else
-            const SizedBox(width: 50),
+            Column(children: [
+              const SizedBox(width: 50),
+              Text(
+                nickname,
+                style: const TextStyle(
+                  fontSize: 7,
+                  color: Colors.transparent,
+                  fontWeight: FontWeight.bold,
+                ),
+                softWrap: true,
+                overflow: TextOverflow.visible,
+              ),
+            ]),
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10.0),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titleMessage,
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
+                  ),
+                  if (showDate)
+                    if (showDday)
+                      Row(
+                        children: [
+                          Text(DateFormat('yyyy-MM-dd').format(date)),
+                          const SizedBox(width: 5),
+                          Text(
+                            ddayText,
+                            style: const TextStyle(color: Colors.green),
+                          ),
+                        ],
+                      )
+                    else
+                      Text(DateFormat('HH:mm').format(date.toLocal())),
+                ],
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(titleMessage),
-                if (showDate)
-                  if (showDday)
-                    Row(
-                      children: [
-                        Text(DateFormat('yyyy-MM-dd').format(date)),
-                        const SizedBox(width: 5),
-                        Text(
-                          ddayText,
-                          style: const TextStyle(color: Colors.green),
-                        ),
-                      ],
-                    )
-                  else
-                    Text(DateFormat('HH:mm').format(date.toLocal())),
-              ],
-            ),
-          ),
+          )
         ],
       ),
     );

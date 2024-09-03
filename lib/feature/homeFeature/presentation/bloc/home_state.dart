@@ -13,11 +13,17 @@ class HomeLoading extends HomeState {}
 
 class HomeLoaded extends HomeState {
   final HomeRealmEntity homeItems;
+  final String nickname;
+  final Map<String, dynamic> profileImage;
 
-  const HomeLoaded(this.homeItems);
+  const HomeLoaded(
+      this.homeItems,
+      this.nickname,
+      this.profileImage
+      );
 
   @override
-  List<Object?> get props => [homeItems];
+  List<Object?> get props => [homeItems, nickname, profileImage];
 }
 
 class HomeError extends HomeState {

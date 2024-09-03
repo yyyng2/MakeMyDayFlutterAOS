@@ -1,11 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonLocalDatasource {
-  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   Future<T?> getDataFromSharedPreferences<T>(String key) async {
     final prefs = await _prefs;
-    prefs.reload();
+    await prefs.reload();
     if (T == String) {
       return prefs.getString(key) as T?;
     } else if (T == int) {
@@ -18,7 +18,6 @@ class CommonLocalDatasource {
 
   Future<void> setDataFromSharedPreferences<T>(String key, T value) async {
     final prefs = await _prefs;
-    prefs.reload();
     if (T == String) {
       await prefs.setString(key, value as String);
     } else if (T == int) {

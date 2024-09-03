@@ -8,6 +8,7 @@ import '../../../ddayFeature/presentation/dday_write_screen.dart';
 import '../../../mainTabFeature/presentation/main_tab_screen.dart';
 import '../../../scheduleFeature/presentation/bloc/schedule_bloc.dart';
 import '../../../scheduleFeature/presentation/schedule_write_screen.dart';
+import '../../../settingsFeature/presentation/bloc/settings_bloc.dart';
 import '../../../settingsFeature/presentation/settings_edit_profile_screen.dart';
 import '../../../splashFeature/presentation/splash_screen.dart';
 
@@ -68,7 +69,15 @@ class AppRouter {
         );
 
       case AppRouter.editProfile:
-        return MaterialPageRoute(builder: (_) => const SettingsEditProfileScreen());
+        final args = settings.arguments as Map<String, dynamic>;
+        final nickname = args['nickname'] as String;
+        final settingsBloc = args['settingsBloc'] as SettingsBloc;
+
+        return MaterialPageRoute(builder: (_) => SettingsEditProfileScreen(
+          nickname: nickname,
+          settingsBloc: settingsBloc
+        )
+        );
 
       default:
         return MaterialPageRoute(

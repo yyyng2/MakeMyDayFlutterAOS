@@ -6,7 +6,7 @@ class MainTabLocalDatasource {
   MainTabLocalDatasource(this._commonLocalDatasource);
 
   Future<bool?> getIsFirstFromSharedPreferences() async {
-    return _commonLocalDatasource.getDataFromSharedPreferences('isLaunchFirst');
+    return _commonLocalDatasource.getDataFromSharedPreferences<bool>('isLaunchFirst');
   }
 
   Future<void> setIsFirstFromSharedPreferences(bool isFisrt) async {
@@ -14,7 +14,7 @@ class MainTabLocalDatasource {
   }
 
   Future<bool?> getThemeFromSharedPreferences() async {
-    return _commonLocalDatasource.getDataFromSharedPreferences('isDarkTheme');
+    return _commonLocalDatasource.getDataFromSharedPreferences<bool>('isDarkTheme');
   }
 
   Future<void> setThemeFromSharedPreferences(bool value) async {
