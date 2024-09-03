@@ -12,23 +12,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final ScheduleUsecase usecase;
 
   ScheduleBloc(this.usecase) : super(ScheduleInitial()) {
-    on<FetchScheduleItems>(_onFetchScheduleItems);
     on<FetchScheduleItemsByDate>(_onFetchScheduleItemsByDate);
     on<AddScheduleItem>(_onAddScheduleItem);
     on<UpdateScheduleItem>(_onUpdateScheduleItem);
     on<DeleteScheduleItem>(_onDeleteScheduleItem);
-  }
-
-  Future<void> _onFetchScheduleItems(
-      FetchScheduleItems event, Emitter<ScheduleState> emit) async {
-    emit(ScheduleLoading());
-    try {
-      final items = await usecase.fetchScheduleItems(event.month);
-      final targetItems = await usecase.fetchScheduleItemsByDate(event.month);
-      emit(ScheduleLoaded(items, targetItems));
-    } catch (e) {
-      emit(const ScheduleError("Failed to load schedule items"));
-    }
   }
 
   Future<void> _onFetchScheduleItemsByDate(
@@ -39,6 +26,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       final targetItems = await usecase.fetchScheduleItemsByDate(event.date);
       emit(ScheduleLoaded(items, targetItems));
     } catch (e) {
+      print('error fetchScheduleItemsByDate: $e');
       emit(const ScheduleError("Failed to load schedule items"));
     }
   }
@@ -47,7 +35,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       AddScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
       await usecase.addScheduleItem(event.item);
-      add(FetchScheduleItems(event.month));
+      add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to add schedule item"));
     }
@@ -57,7 +45,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       UpdateScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
       await usecase.updateScheduleItem(event.id, event.item);
-      add(FetchScheduleItems(event.month));
+      add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to update schedule item"));
     }
@@ -67,7 +55,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       DeleteScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
       await usecase.deleteScheduleItem(event.id);
-      add(FetchScheduleItems(event.month));
+      add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to delete schedule item"));
     }

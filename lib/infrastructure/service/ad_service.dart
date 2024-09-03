@@ -3,6 +3,23 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdService {
+  static String get bannerAdUnitId {
+    if (Platform.isAndroid) {
+      if (kDebugMode) {
+        return "ca-app-pub-3940256099942544/6300978111";
+      } else if (kReleaseMode) {
+        return "ca-app-pub-7183232535482605/1544099348";
+      } else {
+        throw UnsupportedError("Unknown mode");
+      }
+
+    } else if (Platform.isIOS) {
+      return "ca-app-pub-3940256099942544/2934735716";
+    } else {
+      throw UnsupportedError("Unsupported platform");
+    }
+  }
+
   static String get nativeAdUnitId {
     if (Platform.isAndroid) {
       // return "ca-app-pub-3940256099942544/2247696110";

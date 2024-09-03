@@ -35,7 +35,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     scheduleUsecase = ScheduleUsecase(repository: scheduleRepositoryImpl);
     scheduleBloc = ScheduleBloc(scheduleUsecase);
 
-    scheduleBloc.add(FetchScheduleItems(currentDate));
+    scheduleBloc.add(FetchScheduleItemsByDate(currentDate));
   }
 
   @override
@@ -70,14 +70,14 @@ class ScheduleScreenState extends State<ScheduleScreen> {
   void handleMonthChange() {
     setState(() {
       currentDate = getCurrentMonthDate();
-      scheduleBloc.add(FetchScheduleItems(currentDate));
+      scheduleBloc.add(FetchScheduleItemsByDate(currentDate));
     });
   }
 
   void handleDateChange(DateTime newDate) {
     setState(() {
       currentDate = newDate;
-      scheduleBloc.add(FetchScheduleItems(currentDate));
+      scheduleBloc.add(FetchScheduleItemsByDate(currentDate));
     });
   }
 
@@ -86,7 +86,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     return Scaffold(
       // appBar: AppBar(
       //     automaticallyImplyLeading: false,
-          // title: const Text('Schedule')
+      // title: const Text('Schedule')
       // ),
       body: Stack(
         children: [
@@ -112,7 +112,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                 );
               } else if (state is ScheduleError) {
                 return Center(
-                    child: Text('Failed to load notices: ${state.message}'));
+                    child: Text('Failed to load schedules: ${state.message}'));
               } else {
                 return const Center(child: Text('Unknown state'));
               }
@@ -212,10 +212,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
           }
 
           final isSelected = date.isSameDay(currentDate);
-          final hasTask =
-              // scheduleItems.any((item) => item.date.toLocal().isSameDay(date));
-
-          scheduleItems.any((item) {
+          final hasTask = scheduleItems.any((item) {
             final isSame = item.date.toLocal().isSameDay(date);
             // print('item.date: ${item.date.toLocal()}\ndate: $date');
             return isSame;
@@ -317,9 +314,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                         },
                       );
                     },
-                  )
-              )
-          );
+                  )));
         },
       ),
     );

@@ -10,7 +10,7 @@ class HomeUsecase {
 
   Future<HomeRealmEntity> fetchHomeItems(DateTime date) async {
     final ddayItems = await ddayRepository.fetchDdayItems();
-    final scheduleItems = await scheduleRepository.fetchScheduleItemsByDate(date);
+    final scheduleItems = await scheduleRepository.fetchScheduleItemsByDay(date);
     return HomeRealmEntity(ddayItems: ddayItems, scheduleItems: scheduleItems);
   }
 }

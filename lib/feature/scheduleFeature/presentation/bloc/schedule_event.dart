@@ -7,15 +7,6 @@ abstract class ScheduleEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchScheduleItems extends ScheduleEvent {
-  final DateTime month;
-
-  const FetchScheduleItems(this.month);
-
-  @override
-  List<Object?> get props => [month];
-}
-
 class FetchScheduleItemsByDate extends ScheduleEvent {
   final DateTime date;
 

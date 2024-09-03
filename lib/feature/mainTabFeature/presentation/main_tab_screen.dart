@@ -26,6 +26,7 @@ class MainTabScreen extends StatefulWidget {
 class MainTabScreenState extends State<MainTabScreen> {
   int _selectedIndex = 0;
   NativeAd? _nativeAd;
+  BannerAd? _bannerAd;
   bool isAdLoaded = false;
 
   late MainTabBloc mainTabBloc;
@@ -64,6 +65,22 @@ class MainTabScreenState extends State<MainTabScreen> {
       nativeTemplateStyle: isDarkMode
           ? nativeTemplateDark()
           : nativeTemplateLight(),
+    )..load();
+  }
+
+  void _createBannerAd() {
+    _bannerAd = BannerAd(
+      adUnitId: AdService.bannerAdUnitId,
+      listener: BannerAdListener(onAdLoaded: (ad) {
+        setState(() {
+          isAdLoaded = true;
+        });
+      }, onAdFailedToLoad: (ad, error) {
+        print('Failed to load a banner ad: ${error.message}');
+        ad.dispose();
+      }),
+      request: const AdRequest(),
+      size: AdSize.banner,
     )..load();
   }
 
@@ -145,7 +162,8 @@ class MainTabScreenState extends State<MainTabScreen> {
         listener: (context, state) {
           if (state is MainTabLoaded) {
             print('MainTabLoaded');
-            _createNativeAd(state.isDarkMode);
+            // _createNativeAd(state.isDarkMode);
+            _createBannerAd();
           }
         },
         child: BlocBuilder<MainTabBloc, MainTabState>(
@@ -158,10 +176,10 @@ class MainTabScreenState extends State<MainTabScreen> {
                   children: [
                     if (isAdLoaded)
                       Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 5),
+                        padding: const EdgeInsets.only(bottom: 5),
                         child: SizedBox(
-                          height: 72, // Adjust height based on your ad size.
-                          child: AdWidget(ad: _nativeAd!),
+                          height: 62,
+                          child: AdWidget(ad: _bannerAd!),
                         ),
                       ),
                     Expanded(

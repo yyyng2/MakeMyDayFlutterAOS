@@ -9,11 +9,11 @@ class ScheduleUsecase {
   ScheduleUsecase({required this.repository});
 
   Future<List<ScheduleEntity>> fetchScheduleItems(DateTime month) async {
-    return await repository.fetchScheduleItems(month);
+    return await repository.fetchScheduleItemsByMonth(month);
   }
 
   Future<List<ScheduleEntity>> fetchScheduleItemsByDate(DateTime selectedDate) async {
-    return await repository.fetchScheduleItemsByDate(selectedDate);
+    return await repository.fetchScheduleItemsByDay(selectedDate);
   }
 
   Future<void> addScheduleItem(ScheduleEntity item) async {

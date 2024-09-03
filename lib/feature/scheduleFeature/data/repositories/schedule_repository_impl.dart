@@ -16,16 +16,19 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   // }
 
   @override
-  Future<List<ScheduleEntity>> fetchScheduleItems(DateTime month) async {
+  Future<List<ScheduleEntity>> fetchScheduleItemsByMonth(DateTime month) async {
     // final startOfMonth = DateTime.utc(month.year, month.month, 1);
 
     final endOfMonth = DateTime.utc(month.year, month.month + 1, 0, 23, 59, 59);
-    final startOfMonth = DateTime(endOfMonth.year, endOfMonth.month - 1, endOfMonth.day, 15, 0, 0);
+    final startOfMonth = DateTime(
+        endOfMonth.year, endOfMonth.month - 1, endOfMonth.day, 15, 0, 0);
 
-    final test = database.query<ScheduleEntity>(
-        'TRUEPREDICATE SORT (date ASC)');
-
-    print(test.toList().first.date);
+    // final test =
+    //     database.query<ScheduleEntity>('TRUEPREDICATE SORT (date ASC)');
+    //
+    // if (test.isEmpty) {
+    //   return [];
+    // }
 
     // print('startOfMonth: $startOfMonth\nendOfMonth: $endOfMonth');
     final results = database.query<ScheduleEntity>(
@@ -36,20 +39,28 @@ class ScheduleRepositoryImpl implements ScheduleRepository {
   }
 
   @override
-  Future<List<ScheduleEntity>> fetchScheduleItemsByDate(DateTime selectedDate) async {
-    final startOfDay = DateTime(selectedDate.year,
+  Future<List<ScheduleEntity>> fetchScheduleItemsByDay(
+      DateTime selectedDate) async {
+    final startOfDay = DateTime(
+      selectedDate.year,
       selectedDate.month,
       selectedDate.day,
     ).toUtc();
 
-    final endOfDay = startOfDay.add(const Duration(days: 1)).subtract(const Duration(microseconds: 1));
+    final endOfDay = startOfDay
+        .add(const Duration(days: 1))
+        .subtract(const Duration(microseconds: 1));
 
     // print('selectedDate: $selectedDate\nstartOfDay: $startOfDay\nendOfDay: $endOfDay');
     final results = database.query<ScheduleEntity>(
       'date BETWEEN {\$0, \$1} SORT (date ASC)',
       [startOfDay, endOfDay],
     );
-    return results.toList();
+    if (results.length == 0) {
+      return [];
+    } else {
+      return results.toList();
+    }
   }
 
   @override
