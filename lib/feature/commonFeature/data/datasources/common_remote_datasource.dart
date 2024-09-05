@@ -1,9 +1,9 @@
 import '../../../../infrastructure/network/network_client.dart';
 
-class SplashRemoteDatasource {
+class CommonRemoteDatasource {
   final NetworkClient networkClient;
 
-  SplashRemoteDatasource({required this.networkClient});
+  CommonRemoteDatasource({required this.networkClient});
 
   Future<String?> getStoreVersion(String packageName) async {
     final url = Uri.parse("https://play.google.com/store/apps/details?id=$packageName&gl=US");

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:make_my_day/feature/commonFeature/domain/usecases/common_usecase.dart';
 
 import '../../domain/usecases/settings_usecase.dart';
 
@@ -8,10 +9,14 @@ part 'settings_event.dart';
 
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsUsecase usecase;
+  final CommonUsecase commonUsecase;
 
-  SettingsBloc(this.usecase) : super(SettingsInitial()) {
+  SettingsBloc({required this.usecase, required this.commonUsecase}) : super(SettingsInitial()) {
     on<FetchSettingsItems>(_onFetchNickname);
     on<SetNickname>(_setNickname);
+    on<GoToStoreEvent>((event, emit) async {
+      await commonUsecase.openPlayStore();
+    });
   }
 
   Future<void> _onFetchNickname(
@@ -19,7 +24,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(SettingsLoading());
     try {
       final nickname = await usecase.fetchNickname();
-      emit(SettingsLoaded(nickname));
+      final existUpdate = await commonUsecase.checkUpdate() ?? false;
+      emit(SettingsLoaded(nickname, existUpdate));
     } catch (e) {
       emit(const SettingsError("Failed to load settings items"));
     }
@@ -31,7 +37,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     try {
       await usecase.setNickname(event.nickname);
       final nickname = await usecase.fetchNickname();
-      emit(SettingsLoaded(nickname));
+      final existUpdate = await commonUsecase.checkUpdate() ?? false;
+      emit(SettingsLoaded(nickname, existUpdate));
     } catch (e) {
       emit(const SettingsError("Failed to load settings items"));
     }

@@ -10,7 +10,11 @@ class SettingsEditProfileScreen extends StatefulWidget {
   final String? nickname;
   final SettingsBloc settingsBloc;
 
-  const SettingsEditProfileScreen({super.key, required this.nickname, required this.settingsBloc});
+  const SettingsEditProfileScreen({
+    super.key,
+    required this.nickname,
+    required this.settingsBloc
+  });
 
   @override
   SettingsEditProfileScreenState createState() => SettingsEditProfileScreenState();
@@ -69,12 +73,14 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
                   radius: 50,
                   backgroundColor: Colors.transparent,
                   backgroundImage: _image != null
-                      ? FileImage(_image!) // Use FileImage with the File type
-                      : const AssetImage('assets/images/dicon/day_color.png')
+                      ? FileImage(_image!)
+                      : const AssetImage('assets/images/dIcon/day_color.png')
                   as ImageProvider,
                 ),
                 const SizedBox(height: 16),
-                TextField(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
                   controller: _nicknameController,
                   maxLength: 7,
                   decoration: InputDecoration(
@@ -84,8 +90,13 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10
+                    ),
                   ),
                 ),
+            ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

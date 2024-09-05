@@ -13,11 +13,12 @@ class SettingsLoading extends SettingsState {}
 
 class SettingsLoaded extends SettingsState {
   final String nickname;
+  final bool existUpdate;
 
-  const SettingsLoaded(this.nickname);
+  const SettingsLoaded(this.nickname, this.existUpdate);
 
   @override
-  List<Object?> get props => [nickname];
+  List<Object?> get props => [nickname, this.existUpdate];
 }
 
 class SettingsError extends SettingsState {

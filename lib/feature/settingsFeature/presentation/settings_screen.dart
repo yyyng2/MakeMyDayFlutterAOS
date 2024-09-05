@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:make_my_day/feature/commonFeature/data/datasources/common_local_datasource.dart';
-import 'package:make_my_day/feature/settingsFeature/data/datasources/settings_local_datasource.dart';
-import 'package:make_my_day/feature/settingsFeature/data/repositories/settings_repository_impl.dart';
-import 'package:make_my_day/feature/settingsFeature/domain/usecases/settings_usecase.dart';
-import 'package:make_my_day/feature/settingsFeature/presentation/bloc/settings_bloc.dart';
+import 'package:http/http.dart' as http;
 
+import '../../../infrastructure/network/network_client.dart';
+import '../../commonFeature/data/datasources/common_local_datasource.dart';
+import '../../commonFeature/data/datasources/common_remote_datasource.dart';
+import '../../commonFeature/data/repositories/common_repository_impl.dart';
+import '../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../commonFeature/presentation/navigation/app_router.dart';
+import '../data/datasources/settings_local_datasource.dart';
+import '../data/repositories/settings_repository_impl.dart';
+import '../domain/usecases/settings_usecase.dart';
+import 'bloc/settings_bloc.dart';
 import 'enums/settings_options.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -26,10 +31,18 @@ class SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    final client = NetworkClient(client: http.Client());
+    final commonLocalDatasource = CommonLocalDatasource();
+    final commonRemoteDatasource = CommonRemoteDatasource(networkClient: client);
+    final commonRepository = CommonRepositoryImpl(
+      localDatasource: commonLocalDatasource,
+      remoteDatasource: commonRemoteDatasource,
+    );
+    final commonUsecase = CommonUsecase(repository: commonRepository);
     settingsLocalDatasource = SettingsLocalDatasource(commonLocalDatasource);
     settingsRepositoryImpl = SettingsRepositoryImpl(datasource: settingsLocalDatasource);
     settingsUsecase = SettingsUsecase(settingsRepository: settingsRepositoryImpl);
-    settingsBloc = SettingsBloc(settingsUsecase);
+    settingsBloc = SettingsBloc(usecase: settingsUsecase, commonUsecase: commonUsecase);
 
     settingsBloc.add(FetchSettingsItems());
   }
@@ -74,7 +87,8 @@ class SettingsScreenState extends State<SettingsScreen> {
                                   AppRouter.appInfo,
                                   arguments: {
                                     'currentVersion': '1.0.0',
-                                    'currentAppstoreVersion': '1.0.0',
+                                    'settingsBloc': settingsBloc,
+                                    'existUpdate': state.existUpdate,
                                   },
                                 );
                                 break;

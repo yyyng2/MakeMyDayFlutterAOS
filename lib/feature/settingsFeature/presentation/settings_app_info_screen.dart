@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'bloc/settings_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsAppInfoScreen extends StatefulWidget {
   final String currentVersion;
-  final String currentAppstoreVersion;
+  final SettingsBloc settingsBloc;
+  final bool existUpdate;
 
   const SettingsAppInfoScreen({
     super.key,
     required this.currentVersion,
-    required this.currentAppstoreVersion,
+    required this.settingsBloc,
+    required this.existUpdate,
   });
 
   @override
@@ -61,7 +64,7 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/dicon/day_color.png',
+                'assets/images/dIcon/day_color.png',
               ),
               const Text("Make My Day"),
               // TextButton(
@@ -117,23 +120,13 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
               const Spacer(),
               TextButton(
                 onPressed: () {
-                  // Implement update action
+                  if (widget.existUpdate) {
+                    widget.settingsBloc.add(GoToStoreEvent());
+                  }
                 },
                 child: Column(
                   children: [
                     Text(widget.currentVersion),
-                    if (int.parse(widget.currentVersion.replaceAll('.', '')) <
-                        int.parse(widget.currentAppstoreVersion.replaceAll('.', '')))
-                      const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Update",
-                            style: TextStyle(color: Colors.red),
-                          ),
-                          Icon(Icons.badge, color: Colors.red),
-                        ],
-                      ),
                   ],
                 ),
               ),

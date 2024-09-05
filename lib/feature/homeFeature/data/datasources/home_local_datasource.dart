@@ -31,9 +31,9 @@ class HomeLocalDatasource {
       final isDarkTheme = await getThemeFromSharedPreferences() ?? false;
 
       if (isDarkTheme) {
-        defaultImagePath = 'assets/images/dicon/day_white.png';
+        defaultImagePath = 'assets/images/dIcon/day_white.png';
       } else {
-        defaultImagePath = 'assets/images/dicon/day_color.png';
+        defaultImagePath = 'assets/images/dIcon/day_color.png';
       }
 
       return {'isFile': false, 'image': defaultImagePath};

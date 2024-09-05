@@ -59,12 +59,14 @@ class AppRouter {
       case AppRouter.appInfo:
         final args = settings.arguments as Map<String, dynamic>;
         final currentVersion = args['currentVersion'] as String;
-        final currentAppstoreVersion = args['currentAppstoreVersion'] as String;
+        final settingsBloc = args['settingsBloc'] as SettingsBloc;
+        final existUpdate = args['existUpdate'] as bool;
 
         return MaterialPageRoute(
           builder: (_) => SettingsAppInfoScreen(
             currentVersion: currentVersion,
-            currentAppstoreVersion: currentAppstoreVersion,
+            settingsBloc: settingsBloc,
+            existUpdate: existUpdate,
           ),
         );
 
@@ -73,9 +75,10 @@ class AppRouter {
         final nickname = args['nickname'] as String;
         final settingsBloc = args['settingsBloc'] as SettingsBloc;
 
+
         return MaterialPageRoute(builder: (_) => SettingsEditProfileScreen(
           nickname: nickname,
-          settingsBloc: settingsBloc
+          settingsBloc: settingsBloc,
         )
         );
 

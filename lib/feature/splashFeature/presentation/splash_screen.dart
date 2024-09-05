@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../infrastructure/network/network_client.dart';
-import '../data/datasources/splash_local_datasource.dart';
-import '../data/datasources/splash_remote_datasource.dart';
-import '../data/repositories/splash_repository_impl.dart';
-import '../domain/usecases/splash_usecase.dart';
+import '../../commonFeature/data/datasources/common_local_datasource.dart';
+import '../../commonFeature/data/datasources/common_remote_datasource.dart';
+import '../../commonFeature/data/repositories/common_repository_impl.dart';
+import '../../commonFeature/domain/usecases/common_usecase.dart';
 import 'bloc/splash_bloc.dart';
 import '../../commonFeature/presentation/navigation/app_router.dart';
 
@@ -25,15 +25,15 @@ class SplashScreenState extends State<SplashScreen> {
     super.initState();
     
     final client = NetworkClient(client: http.Client());
-    final splashLocalDatasource = SplashLocalDatasource();
-    final splashRemoteDatasource = SplashRemoteDatasource(networkClient: client);
-    final splashRepository = SplashRepositoryImpl(
-      localDatasource: splashLocalDatasource,
-      remoteDatasource: splashRemoteDatasource,
+    final commonLocalDatasource = CommonLocalDatasource();
+    final commonRemoteDatasource = CommonRemoteDatasource(networkClient: client);
+    final commonRepository = CommonRepositoryImpl(
+      localDatasource: commonLocalDatasource,
+      remoteDatasource: commonRemoteDatasource,
     );
-    final splashUsecase = SplashUsecase(repository: splashRepository);
+    final commonUsecase = CommonUsecase(repository: commonRepository);
 
-    _splashBloc = SplashBloc(usecase: splashUsecase);
+    _splashBloc = SplashBloc(usecase: commonUsecase);
 
     // Start the version check
     _splashBloc.add(CheckVersionEvent());

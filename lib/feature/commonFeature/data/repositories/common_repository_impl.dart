@@ -1,15 +1,15 @@
 import 'package:url_launcher/url_launcher.dart';
 
-import '../datasources/splash_local_datasource.dart';
-import '../datasources/splash_remote_datasource.dart';
+import '../datasources/common_local_datasource.dart';
+import '../datasources/common_remote_datasource.dart';
 import '../../domain/entities/version_info_entity.dart';
-import '../../domain/repositories/splash_repository.dart';
+import '../../domain/repositories/common_repository.dart';
 
-class SplashRepositoryImpl implements SplashRepository {
-  final SplashLocalDatasource localDatasource;
-  final SplashRemoteDatasource remoteDatasource;
+class CommonRepositoryImpl implements CommonRepository {
+  final CommonLocalDatasource localDatasource;
+  final CommonRemoteDatasource remoteDatasource;
 
-  SplashRepositoryImpl({required this.localDatasource, required this.remoteDatasource});
+  CommonRepositoryImpl({required this.localDatasource, required this.remoteDatasource});
 
   @override
   Future<bool> checkUpdate() async {

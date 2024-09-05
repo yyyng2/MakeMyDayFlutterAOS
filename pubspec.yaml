@@ -73,7 +73,8 @@ flutter:
   assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
-    - assets/images/dicon/
+    - assets/images/dIcon/
+    - assets/images/theme/
     - assets/images/background/
     - assets/images/tabbar/homeTab/
     - assets/images/tabbar/scheduleTab/

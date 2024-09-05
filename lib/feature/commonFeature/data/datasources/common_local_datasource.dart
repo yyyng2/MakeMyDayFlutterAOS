@@ -1,3 +1,4 @@
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonLocalDatasource {
@@ -31,5 +32,15 @@ class CommonLocalDatasource {
     final prefs = await _prefs;
     prefs.reload();
     prefs.remove(key) as T?;
+  }
+
+  Future<String> getCurrentAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
+  Future<String> getCurrentAppPackageName() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.packageName;
   }
 }

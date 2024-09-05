@@ -17,3 +17,5 @@ class SetNickname extends SettingsEvent {
   @override
   List<Object?> get props => [nickname];
 }
+
+class GoToStoreEvent extends SettingsEvent {}
