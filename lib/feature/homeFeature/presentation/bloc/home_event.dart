@@ -18,5 +18,5 @@ class FetchHomeItems extends HomeEvent {
 
 class TabChangedEvent extends HomeEvent {
   final int index;
-  TabChangedEvent(this.index);
+  const TabChangedEvent(this.index);
 }

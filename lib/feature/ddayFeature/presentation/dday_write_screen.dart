@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:realm/realm.dart';
@@ -11,8 +9,14 @@ class DdayWriteScreen extends StatefulWidget {
   final bool isEdit;
   final DdayEntity? ddayEntity;
   final DdayBloc ddayBloc;
+  final bool isDarkTheme;
 
-  const DdayWriteScreen({super.key, required this.isEdit, required this.ddayEntity, required this.ddayBloc});
+  const DdayWriteScreen(
+      {super.key,
+      required this.isEdit,
+      required this.ddayEntity,
+      required this.ddayBloc,
+      required this.isDarkTheme});
 
   @override
   DdayWriteScreenState createState() => DdayWriteScreenState();
@@ -26,7 +30,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(microseconds: 100));
+    Future.delayed(const Duration(microseconds: 100));
     print('ddayEntity: ${widget.ddayEntity}');
 
     selectedDate = widget.ddayEntity?.date.toLocal() ?? DateTime.now();
@@ -54,7 +58,8 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
       );
 
       if (widget.isEdit) {
-        widget.ddayBloc.add(UpdateDdayItem(widget.ddayEntity?.id ?? ObjectId(), newItem));
+        widget.ddayBloc
+            .add(UpdateDdayItem(widget.ddayEntity?.id ?? ObjectId(), newItem));
       } else {
         widget.ddayBloc.add(AddDdayItem(newItem));
       }
@@ -78,71 +83,121 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
     }
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: widget.isDarkTheme ? Colors.black87 : Colors.white,
           leading: IconButton(
-            icon: const Icon(Icons.chevron_left),
+            icon: Icon(
+              Icons.chevron_left,
+              color: widget.isDarkTheme ? Colors.white : Colors.black,
+            ),
             onPressed: () {
               Navigator.pop(context);
             },
           ),
-          title: const Text("Write Dday"),
+          title: Text(
+            widget.isEdit ? "Edit Dday" : "Write Dday",
+            style: TextStyle(
+                color: widget.isDarkTheme ? Colors.white : Colors.black),
+          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.check),
+              icon: Icon(
+                Icons.check,
+                color: widget.isDarkTheme ? Colors.white : Colors.black,
+              ),
               onPressed: () {
-               _handleSave();
+                _handleSave();
               },
             ),
           ],
         ),
-        body:
-        Stack(
-            children: [
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/images/background/background.png',
-                  fit: BoxFit.cover,
-                ),
-              ),Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextButton(
+        body: Stack(children: [
+          Positioned.fill(
+              child: Image.asset(
+                widget.isDarkTheme
+                    ? 'assets/images/background/background_black.png'
+                    : 'assets/images/background/background.png',
+                fit: BoxFit.cover,
+              )
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: widget.isDarkTheme ? Colors.white : Colors.black,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                          8.0), // Optional: Adds rounded corners
+                    ),
+                    child: TextButton.icon(
                       onPressed: () async {
                         _selectDate();
                       },
-                      child: Text(
+                      icon: Icon(
+                        Icons.calendar_today,
+                        color: widget.isDarkTheme ? Colors.white : Colors.black,
+                      ),
+                      label: Text(
                         DateFormat('yyyy-MM-dd').format(selectedDate),
-                        style: const TextStyle(fontSize: 18),
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: widget.isDarkTheme
+                                ? Colors.white
+                                : Colors.black),
                       ),
-                    ),
-                    SwitchListTile(
-                      activeColor: Colors.blueAccent,
-                      title: const Text("오늘부터 1일"),
-                      value: dayPlus,
-                      onChanged: (bool value) {
-                        setState(() {
-                          dayPlus = value;
-                        });
-                      },
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _contentController,
-                      maxLines: null,
-                      decoration: const InputDecoration(
-                        hintText: 'Enter content…',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
+                    )),
+                SwitchListTile(
+                  activeColor: Colors.blueAccent,
+                  title: Text(
+                    "오늘부터 1일",
+                    style: TextStyle(
+                        color:
+                            widget.isDarkTheme ? Colors.white : Colors.black),
+                  ),
+                  value: dayPlus,
+                  onChanged: (bool value) {
+                    setState(() {
+                      dayPlus = value;
+                    });
+                  },
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-              ),
-            ]));
+                const SizedBox(height: 16),
+                TextField(
+                    controller: _contentController,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                      hintText: 'Enter content…',
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              widget.isDarkTheme ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              widget.isDarkTheme ? Colors.blue : Colors.black,
+                        ),
+                      ),
+                    ),
+                    cursorColor:
+                        widget.isDarkTheme ? Colors.blue : Colors.black,
+                    style: TextStyle(
+                        color:
+                            widget.isDarkTheme ? Colors.white : Colors.black)),
+              ],
+            ),
+          ),
+        ]));
   }
 }

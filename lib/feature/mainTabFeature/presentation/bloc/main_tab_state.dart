@@ -12,12 +12,12 @@ class MainTabInitial extends MainTabState {}
 class MainTabLoading extends MainTabState {}
 
 class MainTabLoaded extends MainTabState {
-  final bool isDarkMode;
+  final bool isDarkTheme;
 
-  const MainTabLoaded({required this.isDarkMode});
+  const MainTabLoaded({required this.isDarkTheme});
 
   @override
-  List<Object> get props => [isDarkMode];
+  List<Object> get props => [isDarkTheme];
 }
 
 class MainTabError extends MainTabState {

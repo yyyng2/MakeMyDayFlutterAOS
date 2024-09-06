@@ -24,23 +24,6 @@ class DdayRepositoryImpl implements DdayRepository {
   }
 
   @override
-  Future<List<DdayEntity>> fetchDdayItemsByDate(DateTime selectedDate) async {
-    final startOfDay = DateTime(selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-    ).toUtc();
-
-    final endOfDay = startOfDay.add(const Duration(days: 1)).subtract(const Duration(microseconds: 1));
-
-    print('selectedDate: $selectedDate\nstartOfDay: $startOfDay\nendOfDay: $endOfDay');
-    final results = database.query<DdayEntity>(
-      'date BETWEEN {\$0, \$1} SORT (date DESC)',
-      [startOfDay, endOfDay],
-    );
-    return results.toList();
-  }
-
-  @override
   Future<void> addDdayItem(DdayEntity item) async {
     database.write(() {
       database.add(item);

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../commonFeature/data/datasources/common_local_datasource.dart';
@@ -15,11 +14,7 @@ class HomeLocalDatasource {
     return nickname ?? 'D';
   }
 
-  Future<bool?> getThemeFromSharedPreferences() async {
-    return _commonLocalDatasource.getDataFromSharedPreferences<bool>('isDarkTheme');
-  }
-
-  Future<Map<String, dynamic>> loadSavedProfileImage() async {
+  Future<Map<String, dynamic>> loadSavedProfileImage(bool theme) async {
     final directory = await getApplicationDocumentsDirectory();
     final path = '${directory.path}/custom_profile_image';
     final savedImage = File(path);
@@ -28,7 +23,7 @@ class HomeLocalDatasource {
       return {'isFile': true, 'image': savedImage};
     } else {
       String defaultImagePath;
-      final isDarkTheme = await getThemeFromSharedPreferences() ?? false;
+      final isDarkTheme = theme;
 
       if (isDarkTheme) {
         defaultImagePath = 'assets/images/dIcon/day_white.png';

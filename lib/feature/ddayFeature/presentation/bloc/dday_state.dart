@@ -13,11 +13,12 @@ class DdayLoading extends DdayState {}
 
 class DdayLoaded extends DdayState {
   final List<DdayEntity> ddayItems;
+  final bool isDarkTheme;
 
-  const DdayLoaded(this.ddayItems);
+  const DdayLoaded(this.ddayItems, this.isDarkTheme);
 
   @override
-  List<Object?> get props => [ddayItems];
+  List<Object?> get props => [ddayItems, isDarkTheme];
 }
 
 class DdayError extends DdayState {

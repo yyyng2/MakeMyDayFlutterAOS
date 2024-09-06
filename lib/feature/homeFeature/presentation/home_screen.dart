@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:make_my_day/feature/commonFeature/data/datasources/common_local_datasource.dart';
-import 'package:make_my_day/feature/homeFeature/data/datasources/home_local_datasource.dart';
-import 'package:make_my_day/feature/homeFeature/data/repositories/home_repository_impl.dart';
 import 'package:realm/realm.dart';
 
+import '../../commonFeature/data/datasources/common_local_datasource.dart';
+import '../../commonFeature/data/repositories/common_repository_impl.dart';
+import '../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../commonFeature/presentation/navigation/app_router.dart';
 import '../../ddayFeature/domain/entities/dday_entity.dart';
 import '../../ddayFeature/data/repositories/dday_repository_impl.dart';
@@ -17,6 +17,8 @@ import '../../scheduleFeature/domain/entities/schedule_entity.dart';
 import '../../scheduleFeature/data/repositories/schedule_repository_impl.dart';
 import '../../scheduleFeature/domain/usecases/schedule_usecase.dart';
 import '../../scheduleFeature/presentation/bloc/schedule_bloc.dart';
+import '../data/datasources/home_local_datasource.dart';
+import '../data/repositories/home_repository_impl.dart';
 import '../domain/usecases/home_usecase.dart';
 import 'bloc/home_bloc.dart';
 
@@ -29,6 +31,8 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   final CommonLocalDatasource commonLocalDatasource = CommonLocalDatasource();
+  late final CommonRepositoryImpl commonRepositoryImpl;
+  late final CommonUsecase commonUsecase;
   late HomeLocalDatasource homeLocalDatasource;
   late HomeRepositoryImpl homeRepositoryImpl;
   late Realm realm;
@@ -47,6 +51,11 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    commonRepositoryImpl = CommonRepositoryImpl(
+        localDatasource: commonLocalDatasource,
+        remoteDatasource: null
+    );
+    commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
     homeLocalDatasource = HomeLocalDatasource(CommonLocalDatasource());
     final config =
         Configuration.local([DdayEntity.schema, ScheduleEntity.schema]);
@@ -55,15 +64,24 @@ class HomeScreenState extends State<HomeScreen> {
     ddayRepositoryImpl = DdayRepositoryImpl(realm);
     scheduleRepositoryImpl = ScheduleRepositoryImpl(realm);
     scheduleUsecase = ScheduleUsecase(repository: scheduleRepositoryImpl);
-    scheduleBloc = ScheduleBloc(scheduleUsecase);
+    scheduleBloc = ScheduleBloc(
+        commonUsecase: commonUsecase,
+        usecase: scheduleUsecase
+    );
     ddayUsecase = DdayUsecase(repository: ddayRepositoryImpl);
-    ddayBloc = DdayBloc(ddayUsecase);
+    ddayBloc = DdayBloc(
+        commonUsecase: commonUsecase,
+        usecase: ddayUsecase
+    );
     homeUsecase = HomeUsecase(
       homeRepository: homeRepositoryImpl,
       ddayRepository: ddayRepositoryImpl,
       scheduleRepository: scheduleRepositoryImpl,
     );
-    homeBloc = HomeBloc(homeUsecase);
+    homeBloc = HomeBloc(
+      commonUsecase: commonUsecase,
+        usecase: homeUsecase
+    );
 
     homeBloc.add(FetchHomeItems(currentDate));
   }
@@ -84,19 +102,22 @@ class HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/background.png',
-              fit: BoxFit.cover,
-            ),
-          ),
           BlocBuilder<HomeBloc, HomeState>(
             bloc: homeBloc,
             builder: (context, state) {
               if (state is HomeInitial) {
                 return const Center(child: CircularProgressIndicator());
               } else if (state is HomeLoaded) {
-                return LayoutBuilder(
+                return Stack(children: [
+                  Positioned.fill(
+                      child: Image.asset(
+                        state.isDarkTheme
+                            ? 'assets/images/background/background_black.png'
+                            : 'assets/images/background/background.png',
+                        fit: BoxFit.cover,
+                      )
+                  ),
+                  LayoutBuilder(
                   builder: (context, constraints) {
                     return SingleChildScrollView(
                       child: ConstrainedBox(
@@ -108,6 +129,7 @@ class HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               MessageView(
+                                isDarkTheme: state.isDarkTheme,
                                 profileImageInfo: state.profileImage,
                                 nickname: state.nickname,
                                 topMessage: DateFormat('yyyy-MM-dd EEE')
@@ -116,6 +138,7 @@ class HomeScreenState extends State<HomeScreen> {
                               ),
                               if (state.homeItems.scheduleItems.isEmpty)
                                 MessageView(
+                                  isDarkTheme: state.isDarkTheme,
                                   profileImageInfo: state.profileImage,
                                   nickname: state.nickname,
                                   topMessage: "오늘의 일정이 없어요.",
@@ -123,6 +146,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 )
                               else ...[
                                 OneMessageView(
+                                  isDarkTheme: state.isDarkTheme,
                                   profileImageInfo: state.profileImage,
                                   nickname: state.nickname,
                                   showImage: true,
@@ -142,10 +166,12 @@ class HomeScreenState extends State<HomeScreen> {
                                           'isEdit': true,
                                           'scheduleObject': item,
                                           'scheduleBloc': scheduleBloc,
+                                          'isDarkTheme': state.isDarkTheme,
                                         },
                                       );
                                     },
                                     child: OneMessageView(
+                                      isDarkTheme: state.isDarkTheme,
                                       profileImageInfo: state.profileImage,
                                       nickname: state.nickname,
                                       showImage: false,
@@ -159,6 +185,7 @@ class HomeScreenState extends State<HomeScreen> {
                               ],
                               if (state.homeItems.ddayItems.isEmpty)
                                 MessageView(
+                                  isDarkTheme: state.isDarkTheme,
                                   profileImageInfo: state.profileImage,
                                   nickname: state.nickname,
                                   topMessage: "등록된 디데이가 없어요.",
@@ -166,6 +193,7 @@ class HomeScreenState extends State<HomeScreen> {
                                 )
                               else ...[
                                 OneMessageView(
+                                  isDarkTheme: state.isDarkTheme,
                                   profileImageInfo: state.profileImage,
                                   nickname: state.nickname,
                                   showImage: true,
@@ -186,10 +214,12 @@ class HomeScreenState extends State<HomeScreen> {
                                             'isEdit': true,
                                             'ddayObject': item,
                                             'ddayBloc': ddayBloc,
+                                            'isDarkTheme': state.isDarkTheme,
                                           },
                                         );
                                       },
                                       child: OneMessageView(
+                                        isDarkTheme: state.isDarkTheme,
                                         profileImageInfo: state.profileImage,
                                         nickname: state.nickname,
                                         showImage: false,
@@ -207,7 +237,7 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   },
-                );
+                )]);
               } else if (state is HomeError) {
                 return Center(
                   child: Text('Error: ${state.message}'),
@@ -232,13 +262,15 @@ class HomeScreenState extends State<HomeScreen> {
                     context: context,
                     builder: (context) {
                       return HomeWriteButtonView(
+                        isDarkTheme: false,
                         onSchedulePressed: () {
                           Navigator.pushNamed(context, AppRouter.scheduleWrite,
                               arguments: {
                                 'isEdit': false,
                                 'scheduleObject':
                                     ScheduleEntity(ObjectId(), '', currentDate),
-                                'scheduleBloc': scheduleBloc
+                                'scheduleBloc': scheduleBloc,
+                                'isDarkTheme': (homeBloc.state is HomeLoaded) ? (homeBloc.state as HomeLoaded).isDarkTheme : false,
                               });
                         },
                         onDdayPressed: () {
@@ -247,7 +279,8 @@ class HomeScreenState extends State<HomeScreen> {
                                 'isEdit': false,
                                 'ddayObject': DdayEntity(
                                     ObjectId(), '', DateTime.now(), true),
-                                'ddayBloc': ddayBloc
+                                'ddayBloc': ddayBloc,
+                                'isDarkTheme': (homeBloc.state is HomeLoaded) ? (homeBloc.state as HomeLoaded).isDarkTheme : false,
                               });
                         },
                       );
@@ -267,12 +300,14 @@ class HomeScreenState extends State<HomeScreen> {
 }
 
 class MessageView extends StatelessWidget {
+  final bool isDarkTheme;
   final Map<String, dynamic> profileImageInfo;
   final String nickname;
   final String topMessage;
   final String bottomMessage;
 
   const MessageView({
+    required this.isDarkTheme,
     required this.profileImageInfo,
     required this.nickname,
     required this.topMessage,
@@ -304,9 +339,9 @@ class MessageView extends StatelessWidget {
               ),
               Text(
                 nickname,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 7,
-                  color: Colors.black,
+                  color: isDarkTheme ? Colors.white : Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
                 softWrap: true,
@@ -318,7 +353,7 @@ class MessageView extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkTheme ? Colors.black87 : Colors.white,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               padding: const EdgeInsets.all(8.0),
@@ -327,11 +362,13 @@ class MessageView extends StatelessWidget {
                 children: [
                   Text(
                     topMessage,
+                    style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
                     softWrap: true,
                     overflow: TextOverflow.visible,
                   ),
                   Text(
                     bottomMessage,
+                    style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
                     softWrap: true,
                     overflow: TextOverflow.visible,
                   ),
@@ -346,6 +383,7 @@ class MessageView extends StatelessWidget {
 }
 
 class OneMessageView extends StatelessWidget {
+  final bool isDarkTheme;
   final Map<String, dynamic> profileImageInfo;
   final String nickname;
   final bool showImage;
@@ -356,6 +394,7 @@ class OneMessageView extends StatelessWidget {
   final DateTime date;
 
   const OneMessageView({
+    required this.isDarkTheme,
     required this.profileImageInfo,
     required this.nickname,
     required this.showImage,
@@ -410,9 +449,9 @@ class OneMessageView extends StatelessWidget {
                 ),
                 Text(
                   nickname,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 7,
-                    color: Colors.black,
+                    color: isDarkTheme ? Colors.white : Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                   softWrap: true,
@@ -439,7 +478,7 @@ class OneMessageView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkTheme ? Colors.black87 : Colors.white,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Column(
@@ -447,6 +486,7 @@ class OneMessageView extends StatelessWidget {
                 children: [
                   Text(
                     titleMessage,
+                    style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
                     softWrap: true,
                     overflow: TextOverflow.visible,
                   ),
@@ -454,7 +494,9 @@ class OneMessageView extends StatelessWidget {
                     if (showDday)
                       Row(
                         children: [
-                          Text(DateFormat('yyyy-MM-dd').format(date)),
+                          Text(
+                              DateFormat('yyyy-MM-dd').format(date),
+                          style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),),
                           const SizedBox(width: 5),
                           Text(
                             ddayText,
@@ -463,7 +505,10 @@ class OneMessageView extends StatelessWidget {
                         ],
                       )
                     else
-                      Text(DateFormat('HH:mm').format(date.toLocal())),
+                      Text(
+                          DateFormat('a hh:mm').format(date.toLocal()),
+                        style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
+                      ),
                 ],
               ),
             ),
@@ -475,10 +520,12 @@ class OneMessageView extends StatelessWidget {
 }
 
 class HomeWriteButtonView extends StatelessWidget {
+  final bool isDarkTheme;
   final VoidCallback onSchedulePressed;
   final VoidCallback onDdayPressed;
 
   const HomeWriteButtonView({
+    required this.isDarkTheme,
     required this.onSchedulePressed,
     required this.onDdayPressed,
     super.key,
@@ -493,12 +540,18 @@ class HomeWriteButtonView extends StatelessWidget {
         children: [
           ElevatedButton(
             onPressed: onSchedulePressed,
-            child: const Text("Add Schedule"),
+            child: Text(
+                "Add Schedule",
+              style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
+            ),
           ),
           const SizedBox(width: 10),
           ElevatedButton(
             onPressed: onDdayPressed,
-            child: const Text("Add D-Day"),
+            child: Text(
+                "Add D-Day",
+              style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
+            ),
           ),
         ],
       ),

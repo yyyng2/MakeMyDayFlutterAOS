@@ -14,11 +14,12 @@ class ScheduleLoading extends ScheduleState {}
 class ScheduleLoaded extends ScheduleState {
   final List<ScheduleEntity> scheduleItems;
   final List<ScheduleEntity> scheduleTargetItems;
+  final bool isDarkTheme;
 
-  const ScheduleLoaded(this.scheduleItems, this.scheduleTargetItems);
+  const ScheduleLoaded(this.scheduleItems, this.scheduleTargetItems, this.isDarkTheme);
 
   @override
-  List<Object?> get props => [scheduleItems, scheduleTargetItems];
+  List<Object?> get props => [scheduleItems, scheduleTargetItems, isDarkTheme];
 }
 
 class ScheduleError extends ScheduleState {

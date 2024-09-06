@@ -16,4 +16,15 @@ class SettingsRepositoryImpl implements SettingsRepository {
   Future<void> setNickname(String nickname) async {
     await datasource.setNicknameFromSharedPreferences(nickname);
   }
+
+  @override
+  Future<bool> getTheme() async {
+    final result = await datasource.getThemeFromSharedPreferences() ?? false ;
+    return result;
+  }
+
+  @override
+  Future<void> setTheme(bool value) async {
+    await datasource.setThemeFromSharedPreferences(value);
+  }
 }

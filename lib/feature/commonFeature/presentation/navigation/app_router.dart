@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:make_my_day/feature/mainTabFeature/presentation/bloc/main_tab_bloc.dart';
 import 'package:make_my_day/feature/scheduleFeature/domain/entities/schedule_entity.dart';
 import 'package:make_my_day/feature/settingsFeature/presentation/settings_app_info_screen.dart';
+import 'package:make_my_day/feature/settingsFeature/presentation/settings_theme_screen.dart';
 
 import '../../../ddayFeature/domain/entities/dday_entity.dart';
 import '../../../ddayFeature/presentation/bloc/dday_bloc.dart';
@@ -19,6 +21,7 @@ class AppRouter {
   static const String ddayWrite = '/ddayWrite';
   static const String appInfo = '/appInfo';
   static const String editProfile = '/editProfile';
+  static const String theme = '/theme';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -33,12 +36,14 @@ class AppRouter {
         final isEdit = args['isEdit'] as bool;
         final scheduleEntity = args['scheduleObject'] as ScheduleEntity?;
         final scheduleBloc = args['scheduleBloc'] as ScheduleBloc;
+        final isDarkTheme = args['isDarkTheme'] as bool;
 
         return MaterialPageRoute(
           builder: (_) => ScheduleWriteScreen(
             isEdit: isEdit,
             scheduleEntity: scheduleEntity,
             scheduleBloc: scheduleBloc,
+            isDarkTheme: isDarkTheme,
           ),
         );
 
@@ -47,12 +52,14 @@ class AppRouter {
         final isEdit = args['isEdit'] as bool;
         final ddayEntity = args['ddayObject'] as DdayEntity?;
         final ddayBloc = args['ddayBloc'] as DdayBloc;
+        final isDarkTheme = args['isDarkTheme'] as bool;
 
         return MaterialPageRoute(
           builder: (_) => DdayWriteScreen(
             isEdit: isEdit,
             ddayEntity: ddayEntity,
             ddayBloc: ddayBloc,
+            isDarkTheme: isDarkTheme,
           ),
         );
 
@@ -61,12 +68,14 @@ class AppRouter {
         final currentVersion = args['currentVersion'] as String;
         final settingsBloc = args['settingsBloc'] as SettingsBloc;
         final existUpdate = args['existUpdate'] as bool;
+        final isDarkTheme = args['isDarkTheme'] as bool;
 
         return MaterialPageRoute(
           builder: (_) => SettingsAppInfoScreen(
             currentVersion: currentVersion,
             settingsBloc: settingsBloc,
             existUpdate: existUpdate,
+            isDarkTheme: isDarkTheme,
           ),
         );
 
@@ -74,13 +83,27 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>;
         final nickname = args['nickname'] as String;
         final settingsBloc = args['settingsBloc'] as SettingsBloc;
+        final isDarkTheme = args['isDarkTheme'] as bool;
 
+        return MaterialPageRoute(
+            builder: (_) => SettingsEditProfileScreen(
+                  nickname: nickname,
+                  settingsBloc: settingsBloc,
+                  isDarkTheme: isDarkTheme,
+                ));
 
-        return MaterialPageRoute(builder: (_) => SettingsEditProfileScreen(
-          nickname: nickname,
-          settingsBloc: settingsBloc,
-        )
-        );
+      case AppRouter.theme:
+        final args = settings.arguments as Map<String, dynamic>;
+        final isDarkTheme = args['isDarkTheme'] as bool;
+        final settingsBloc = args['settingsBloc'] as SettingsBloc;
+        final mainTabBloc = args['mainTabBloc'] as MainTabBloc;
+
+        return MaterialPageRoute(
+            builder: (_) => SettingsThemeScreen(
+                  isDarkTheme: isDarkTheme,
+                  settingsBloc: settingsBloc,
+                  mainTabBloc: mainTabBloc,
+                ));
 
       default:
         return MaterialPageRoute(

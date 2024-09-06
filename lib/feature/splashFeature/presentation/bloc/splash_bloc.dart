@@ -17,7 +17,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
         if (existUpdate != null) {
           emit(SplashLoaded(existUpdate: existUpdate));
         } else {
-          emit(SplashError(errorMessage: 'existUpdate is null'));
+          emit(const SplashError(errorMessage: 'existUpdate is null'));
         }
       } catch (e) {
         emit(SplashError(errorMessage: '$e'));

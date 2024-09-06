@@ -12,4 +12,8 @@ class CommonUsecase {
   Future<void> openPlayStore() async {
     await repository.openPlayStore();
   }
+
+  Future<bool> getTheme() async {
+    return await repository.getTheme();
+  }
 }

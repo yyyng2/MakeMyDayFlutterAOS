@@ -1,4 +1,3 @@
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../commonFeature/data/datasources/common_local_datasource.dart';
 
@@ -14,5 +13,13 @@ class SettingsLocalDatasource {
 
   Future<void> setNicknameFromSharedPreferences(String nickname) async {
     await _commonLocalDatasource.setDataFromSharedPreferences('nickname', nickname);
+  }
+
+  Future<bool?> getThemeFromSharedPreferences() async {
+    return _commonLocalDatasource.getThemeFromSharedPreferences();
+  }
+
+  Future<void> setThemeFromSharedPreferences(bool value) async {
+    return _commonLocalDatasource.setDataFromSharedPreferences('isDarkTheme', value);
   }
 }

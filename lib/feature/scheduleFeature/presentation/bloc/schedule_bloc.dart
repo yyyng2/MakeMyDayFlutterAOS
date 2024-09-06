@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../domain/entities/schedule_entity.dart';
 import '../../domain/usecases/schedule_usecase.dart';
 
@@ -9,9 +10,10 @@ part 'schedule_event.dart';
 part 'schedule_state.dart';
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
+  final CommonUsecase commonUsecase;
   final ScheduleUsecase usecase;
 
-  ScheduleBloc(this.usecase) : super(ScheduleInitial()) {
+  ScheduleBloc({required this.commonUsecase, required this.usecase}) : super(ScheduleInitial()) {
     on<FetchScheduleItemsByDate>(_onFetchScheduleItemsByDate);
     on<AddScheduleItem>(_onAddScheduleItem);
     on<UpdateScheduleItem>(_onUpdateScheduleItem);
@@ -24,7 +26,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     try {
       final items = await usecase.fetchScheduleItems(event.date);
       final targetItems = await usecase.fetchScheduleItemsByDate(event.date);
-      emit(ScheduleLoaded(items, targetItems));
+      final isDarkTheme = await commonUsecase.getTheme();
+      emit(ScheduleLoaded(items, targetItems, isDarkTheme));
     } catch (e) {
       print('error fetchScheduleItemsByDate: $e');
       emit(const ScheduleError("Failed to load schedule items"));

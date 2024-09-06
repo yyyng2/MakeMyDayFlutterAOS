@@ -1,4 +1,4 @@
 abstract class HomeRepository {
   Future<String> getNickname();
-  Future<Map<String, dynamic>> getProfileImage();
+  Future<Map<String, dynamic>> getProfileImage(bool isDarkTheme);
 }

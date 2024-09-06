@@ -1,34 +1,23 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/usecases/main_tab_usecase.dart';
+
+import '../../../commonFeature/domain/usecases/common_usecase.dart';
 
 part 'main_tab_event.dart';
 part 'main_tab_state.dart';
 
 class MainTabBloc extends Bloc<MainTabEvent, MainTabState> {
-  final MainTabUsecase _mainTabUsecase;
+  final CommonUsecase _commonUsecase;
 
-  MainTabBloc(this._mainTabUsecase) : super(MainTabInitial()) {
-    on<LoadMainTabThemeEvent>((event, emit) async {
-      emit(MainTabLoading()); // Emit loading state
+  MainTabBloc(this._commonUsecase) : super(MainTabInitial()) {
+    on<LoadThemeEvent>((event, emit) async {
+      emit(MainTabLoading());
       try {
-        final isDarkMode = await _mainTabUsecase.call();
-        emit(MainTabLoaded(isDarkMode: isDarkMode ?? false)); // Emit loaded state
+        final isDarkTheme = await _commonUsecase.getTheme();
+        emit(MainTabLoaded(isDarkTheme: isDarkTheme));
       } catch (e) {
-        emit(MainTabError(errorMessage: e.toString())); // Emit error state
+        emit(MainTabError(errorMessage: e.toString()));
       }
     });
-
-    on<ToggleMainTabThemeEvent>((event, emit) async {
-      try {
-        final newTheme = !(state as MainTabLoaded).isDarkMode;
-        await _mainTabUsecase.setTheme(newTheme);
-        emit(MainTabLoaded(isDarkMode: newTheme)); // Emit updated theme state
-      } catch (e) {
-        emit(MainTabError(errorMessage: e.toString())); // Emit error state
-      }
-    });
-
-    add(LoadMainTabThemeEvent()); // Automatically load theme on Bloc initialization
   }
 }

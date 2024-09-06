@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
-import 'package:intl/intl.dart';
 
+import '../../commonFeature/data/datasources/common_local_datasource.dart';
+import '../../commonFeature/data/repositories/common_repository_impl.dart';
+import '../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../commonFeature/presentation/navigation/app_router.dart';
 import '../data/repositories/dday_repository_impl.dart';
 import '../domain/entities/dday_entity.dart';
@@ -17,6 +19,9 @@ class DdayScreen extends StatefulWidget {
 }
 
 class DdayScreenState extends State<DdayScreen> {
+  final CommonLocalDatasource commonLocalDatasource = CommonLocalDatasource();
+  late final CommonRepositoryImpl commonRepositoryImpl;
+  late final CommonUsecase commonUsecase;
   late Realm realm;
   late DdayRepositoryImpl ddayRepositoryImpl;
   late DdayUsecase ddayUsecase;
@@ -25,12 +30,14 @@ class DdayScreenState extends State<DdayScreen> {
   @override
   void initState() {
     super.initState();
+    commonRepositoryImpl = CommonRepositoryImpl(
+        localDatasource: commonLocalDatasource, remoteDatasource: null);
+    commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
     final config = Configuration.local([DdayEntity.schema]);
-    print(config.path);
     realm = Realm(config);
     ddayRepositoryImpl = DdayRepositoryImpl(realm);
     ddayUsecase = DdayUsecase(repository: ddayRepositoryImpl);
-    ddayBloc = DdayBloc(ddayUsecase);
+    ddayBloc = DdayBloc(commonUsecase: commonUsecase, usecase: ddayUsecase);
 
     ddayBloc.add(FetchDdayItems());
   }
@@ -44,34 +51,34 @@ class DdayScreenState extends State<DdayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/background.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          BlocBuilder<DdayBloc, DdayState>(
-            bloc: ddayBloc,
-            builder: (context, state) {
-              if (state is DdayInitial) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is DdayLoaded) {
-                return Column(
-                  children: [
-                    _buildDdayList(state.ddayItems),
-                  ],
-                );
-              } else if (state is DdayError) {
-                return Center(
-                    child: Text('Failed to load notices: ${state.message}'));
-              } else {
-                return const Center(child: Text('Unknown state'));
-              }
-            },
-          ),
-        ],
+      body: BlocBuilder<DdayBloc, DdayState>(
+        bloc: ddayBloc,
+        builder: (context, state) {
+          if (state is DdayInitial) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is DdayLoaded) {
+            return Stack(children: [
+              Positioned.fill(
+                  child: Image.asset(
+                    state.isDarkTheme
+                        ? 'assets/images/background/background_black.png'
+                        : 'assets/images/background/background.png',
+                    fit: BoxFit.cover,
+                  )
+              ),
+              Column(
+                children: [
+                  _buildDdayList(state.ddayItems, state.isDarkTheme),
+                ],
+              )
+            ]);
+          } else if (state is DdayError) {
+            return Center(
+                child: Text('Failed to load notices: ${state.message}'));
+          } else {
+            return const Center(child: Text('Unknown state'));
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'ddayScreen',
@@ -79,7 +86,8 @@ class DdayScreenState extends State<DdayScreen> {
           Navigator.pushNamed(context, AppRouter.ddayWrite, arguments: {
             'isEdit': false,
             'ddayObject': DdayEntity(ObjectId(), '', DateTime.now(), true),
-            'ddayBloc': ddayBloc
+            'ddayBloc': ddayBloc,
+            'isDarkTheme': (ddayBloc.state is DdayLoaded) ? (ddayBloc.state as DdayLoaded).isDarkTheme : false,
           });
         },
         backgroundColor: Colors.white,
@@ -88,15 +96,57 @@ class DdayScreenState extends State<DdayScreen> {
     );
   }
 
-  Widget _buildDdayList(List<DdayEntity> ddayItems) {
+  Widget _buildDdayList(List<DdayEntity> ddayItems, bool isDarkTheme) {
     return Expanded(
-      child: ListView.builder(
+      child:  ddayItems.isEmpty
+          ? ListView.builder(
+          itemCount: 1,
+          itemBuilder: (context, index) {
+            return Material(
+                color: Colors.transparent,
+                child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListTile(
+                      tileColor:
+                      isDarkTheme ? Colors.black87 : Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      title: Text(
+                        "디데이가 없어요.",
+                        style: TextStyle(
+                            color:
+                            isDarkTheme ? Colors.white : Colors.black),
+                      ),
+                      subtitle: Text(
+                        "디데이를 작성해보세요.",
+                        style: TextStyle(
+                            color:
+                            isDarkTheme ? Colors.white : Colors.black),
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRouter.ddayWrite,
+                          arguments: {
+                            'isEdit': false,
+                            'ddayObject': DdayEntity(ObjectId(), '', DateTime.now(), true),
+                            'ddayBloc': ddayBloc,
+                            'isDarkTheme': isDarkTheme,
+                          },
+                        );
+                      },
+                    )));
+          })
+          : ListView.builder(
         itemCount: ddayItems.length,
         itemBuilder: (context, index) {
           final item = ddayItems[index];
           final now = DateTime.now();
 
-          var differenceInDays = item.date.difference(DateTime(now.year, now.month, now.day)).inDays;
+          var differenceInDays = item.date
+              .difference(DateTime(now.year, now.month, now.day))
+              .inDays;
 
           if (item.dayPlus) {
             differenceInDays = differenceInDays - 1;
@@ -116,12 +166,18 @@ class DdayScreenState extends State<DdayScreen> {
               child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListTile(
-                    tileColor: Colors.white,
+                    tileColor: isDarkTheme ? Colors.black87 : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    title: Text(item.title),
-                    subtitle: Text(ddayText),
+                    title: Text(
+                        item.title,
+                      style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
+                    ),
+                    subtitle: Text(
+                        ddayText,
+                      style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
+                    ),
                     onTap: () {
                       Navigator.pushNamed(
                         context,
@@ -130,6 +186,7 @@ class DdayScreenState extends State<DdayScreen> {
                           'isEdit': true,
                           'ddayObject': item,
                           'ddayBloc': ddayBloc,
+                          'isDarkTheme': isDarkTheme,
                         },
                       );
                     },
@@ -149,8 +206,7 @@ class DdayScreenState extends State<DdayScreen> {
                               ),
                               TextButton(
                                 onPressed: () {
-                                  ddayBloc.add(
-                                      DeleteDdayItem(item.id));
+                                  ddayBloc.add(DeleteDdayItem(item.id));
                                   Navigator.pop(context); // Close the dialog
                                 },
                                 child: const Text("Delete",
@@ -161,9 +217,7 @@ class DdayScreenState extends State<DdayScreen> {
                         },
                       );
                     },
-                  )
-              )
-          );
+                  )));
         },
       ),
     );

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import '../entities/home_realm_entity.dart';
 import '../../domain/repositories/home_repository.dart';
@@ -26,7 +25,7 @@ class HomeUsecase {
     return homeRepository.getNickname();
   }
 
-  Future<Map<String, dynamic>> fetchProfileImage() async {
-    return homeRepository.getProfileImage();
+  Future<Map<String, dynamic>> fetchProfileImage(bool isDarkTheme) async {
+    return homeRepository.getProfileImage(isDarkTheme);
   }
 }

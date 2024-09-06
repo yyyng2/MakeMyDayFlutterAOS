@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:make_my_day/feature/ddayFeature/presentation/bloc/dday_bloc.dart';
-import 'package:make_my_day/feature/homeFeature/presentation/bloc/home_bloc.dart';
-import 'package:make_my_day/feature/scheduleFeature/presentation/bloc/schedule_bloc.dart';
 
 import '../../commonFeature/data/datasources/common_local_datasource.dart';
-import '../data/datasources/main_tab_local_datasource.dart';
-import '../data/repositories/main_tab_repository_impl.dart';
-import '../domain/usecases/main_tab_usecase.dart';
+import '../../commonFeature/data/repositories/common_repository_impl.dart';
+import '../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../../infrastructure/service/ad_service.dart';
+import '../../ddayFeature/presentation/bloc/dday_bloc.dart';
 import '../../ddayFeature/presentation/dday_screen.dart';
+import '../../homeFeature/presentation/bloc/home_bloc.dart';
 import '../../homeFeature/presentation/home_screen.dart';
 import '../../scheduleFeature/presentation/schedule_screen.dart';
+import '../../scheduleFeature/presentation/bloc/schedule_bloc.dart';
 import '../../settingsFeature/presentation/settings_screen.dart';
 import 'bloc/main_tab_bloc.dart';
 
@@ -31,26 +30,27 @@ class MainTabScreenState extends State<MainTabScreen> {
 
   late MainTabBloc mainTabBloc;
   final CommonLocalDatasource commonLocalDatasource = CommonLocalDatasource();
-  late final MainTabLocalDatasource mainTabLocalDatasource;
-  late final MainTabRepositoryImpl mainTabRepositoryImpl;
-  late final MainTabUsecase mainTabUsecase;
+  late final CommonRepositoryImpl commonRepositoryImpl;
+  late final CommonUsecase commonUsecase;
 
-  final GlobalKey<HomeScreenState> _homeScreenKey = GlobalKey<HomeScreenState>();
-  final GlobalKey<ScheduleScreenState> _scheduleScreenKey = GlobalKey<ScheduleScreenState>();
-  final GlobalKey<DdayScreenState> _ddayScreenKey = GlobalKey<DdayScreenState>();
+  final GlobalKey<HomeScreenState> _homeScreenKey =
+      GlobalKey<HomeScreenState>();
+  final GlobalKey<ScheduleScreenState> _scheduleScreenKey =
+      GlobalKey<ScheduleScreenState>();
+  final GlobalKey<DdayScreenState> _ddayScreenKey =
+      GlobalKey<DdayScreenState>();
 
   @override
   void initState() {
     super.initState();
-    mainTabLocalDatasource = MainTabLocalDatasource(commonLocalDatasource);
-    mainTabRepositoryImpl = MainTabRepositoryImpl(datasource: mainTabLocalDatasource);
-    mainTabUsecase = MainTabUsecase(repository: mainTabRepositoryImpl);
-    mainTabBloc = MainTabBloc(mainTabUsecase);
-    mainTabBloc.add(LoadMainTabThemeEvent());
-    // _createNativeAd();
+    commonRepositoryImpl = CommonRepositoryImpl(
+        localDatasource: commonLocalDatasource, remoteDatasource: null);
+    commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
+    mainTabBloc = MainTabBloc(commonUsecase);
+    mainTabBloc.add(LoadThemeEvent());
   }
 
-  void _createNativeAd(bool isDarkMode) {
+  void _createNativeAd(bool isDarkTheme) {
     _nativeAd = NativeAd(
       adUnitId: AdService.nativeAdUnitId,
       listener: NativeAdListener(onAdLoaded: (ad) {
@@ -62,9 +62,8 @@ class MainTabScreenState extends State<MainTabScreen> {
         ad.dispose();
       }),
       request: const AdRequest(),
-      nativeTemplateStyle: isDarkMode
-          ? nativeTemplateDark()
-          : nativeTemplateLight(),
+      nativeTemplateStyle:
+          isDarkTheme ? nativeTemplateDark() : nativeTemplateLight(),
     )..load();
   }
 
@@ -86,8 +85,9 @@ class MainTabScreenState extends State<MainTabScreen> {
 
   //Dark Mode
   NativeTemplateStyle nativeTemplateDark() {
-    final templateType =
-    MediaQuery.of(context).size.width < 360 ? TemplateType.small : TemplateType.medium;
+    final templateType = MediaQuery.of(context).size.width < 360
+        ? TemplateType.small
+        : TemplateType.medium;
     return NativeTemplateStyle(
       templateType: templateType,
       mainBackgroundColor: Colors.grey.shade800,
@@ -121,8 +121,9 @@ class MainTabScreenState extends State<MainTabScreen> {
 
   // Light Mode
   NativeTemplateStyle nativeTemplateLight() {
-    final templateType =
-    MediaQuery.of(context).size.width < 360 ? TemplateType.small : TemplateType.medium;
+    final templateType = MediaQuery.of(context).size.width < 360
+        ? TemplateType.small
+        : TemplateType.medium;
     return NativeTemplateStyle(
       templateType: templateType,
       mainBackgroundColor: Colors.white,
@@ -162,15 +163,16 @@ class MainTabScreenState extends State<MainTabScreen> {
         listener: (context, state) {
           if (state is MainTabLoaded) {
             print('MainTabLoaded');
-            // _createNativeAd(state.isDarkMode);
+            // _createNativeAd(state.isDarkTheme);
             _createBannerAd();
           }
         },
         child: BlocBuilder<MainTabBloc, MainTabState>(
           builder: (context, state) {
-            final isDarkMode = state is MainTabLoaded ? state.isDarkMode : false;
+            final isDarkTheme =
+                state is MainTabLoaded ? state.isDarkTheme : false;
             return Scaffold(
-              backgroundColor: isDarkMode ? Colors.black : Colors.white,
+              backgroundColor: isDarkTheme ? Colors.black : Colors.white,
               body: SafeArea(
                 child: Column(
                   children: [
@@ -187,9 +189,15 @@ class MainTabScreenState extends State<MainTabScreen> {
                         index: _selectedIndex,
                         children: [
                           HomeScreen(key: _homeScreenKey),
-                          ScheduleScreen(key: _scheduleScreenKey,),
-                          DdayScreen(key: _ddayScreenKey,),
-                          const SettingsScreen(),
+                          ScheduleScreen(
+                            key: _scheduleScreenKey,
+                          ),
+                          DdayScreen(
+                            key: _ddayScreenKey,
+                          ),
+                          SettingsScreen(
+                            mainTabBloc: mainTabBloc,
+                          ),
                         ],
                       ),
                     ),
@@ -208,6 +216,7 @@ class MainTabScreenState extends State<MainTabScreen> {
                   ],
                 ),
                 child: BottomNavigationBar(
+                  backgroundColor: isDarkTheme ? Colors.black : Colors.white,
                   type: BottomNavigationBarType.fixed,
                   currentIndex: _selectedIndex,
                   onTap: (index) {
@@ -215,42 +224,77 @@ class MainTabScreenState extends State<MainTabScreen> {
                       _selectedIndex = index;
 
                       if (index == 0) {
-                        _homeScreenKey.currentState?.homeBloc.add(FetchHomeItems(DateTime.now()));
+                        _homeScreenKey.currentState?.homeBloc
+                            .add(FetchHomeItems(DateTime.now()));
                       } else if (index == 1) {
-                        _scheduleScreenKey.currentState?.scheduleBloc.add(FetchScheduleItemsByDate(DateTime.now()));
+                        _scheduleScreenKey.currentState?.scheduleBloc
+                            .add(FetchScheduleItemsByDate(DateTime.now()));
                       } else if (index == 2) {
-                        _ddayScreenKey.currentState?.ddayBloc.add(FetchDdayItems());
+                        _ddayScreenKey.currentState?.ddayBloc
+                            .add(FetchDdayItems());
                       }
                     });
                   },
-                  selectedItemColor: isDarkMode ? Colors.white : Colors.black,
+                  selectedItemColor: isDarkTheme ? Colors.white : Colors.black,
                   unselectedItemColor: Colors.grey,
-                  selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
+                  selectedLabelStyle: TextStyle(
+                      color: isDarkTheme ? Colors.black : Colors.white,
+                      fontWeight: FontWeight.bold),
+                  unselectedLabelStyle: TextStyle(
+                      color: isDarkTheme ? Colors.black : Colors.white,
+                      fontWeight: FontWeight.normal),
                   items: [
                     _buildBottomNavigationBarItem(
-                      'Home',
-                      'assets/images/tabbar/homeTab/home_black.png',
-                      'assets/images/tabbar/homeTab/home_black_fill.png',
-                      0,
+                      isDarkTheme: isDarkTheme,
+                      label: 'Home',
+                      unselectedIconPath:
+                          'assets/images/tabbar/homeTab/home_black.png',
+                      unselectedIconPathDarkMode:
+                          'assets/images/tabbar/homeTab/home_white.png',
+                      selectedIconPath:
+                          'assets/images/tabbar/homeTab/home_black_fill.png',
+                      selectedIconPathDarkMode:
+                          'assets/images/tabbar/homeTab/home_white_fill.png',
+                      index: 0,
                     ),
                     _buildBottomNavigationBarItem(
-                      'Schedule',
-                      'assets/images/tabbar/scheduleTab/schedule_black.png',
-                      'assets/images/tabbar/scheduleTab/schedule_black_fill.png',
-                      1,
+                      isDarkTheme: isDarkTheme,
+                      label: 'Schedule',
+                      unselectedIconPath:
+                          'assets/images/tabbar/scheduleTab/schedule_black.png',
+                      unselectedIconPathDarkMode:
+                          'assets/images/tabbar/scheduleTab/schedule_white.png',
+                      selectedIconPath:
+                          'assets/images/tabbar/scheduleTab/schedule_black_fill.png',
+                      selectedIconPathDarkMode:
+                          'assets/images/tabbar/scheduleTab/schedule_white_fill.png',
+                      index: 1,
                     ),
                     _buildBottomNavigationBarItem(
-                      'D-day',
-                      'assets/images/tabbar/dDayTab/dday_black.png',
-                      'assets/images/tabbar/dDayTab/dday_black_fill.png',
-                      2,
+                      isDarkTheme: isDarkTheme,
+                      label: 'D-day',
+                      unselectedIconPath:
+                          'assets/images/tabbar/dDayTab/dday_black.png',
+                      unselectedIconPathDarkMode:
+                          'assets/images/tabbar/dDayTab/dday_white.png',
+                      selectedIconPath:
+                          'assets/images/tabbar/dDayTab/dday_black_fill.png',
+                      selectedIconPathDarkMode:
+                          'assets/images/tabbar/dDayTab/dday_white_fill.png',
+                      index: 2,
                     ),
                     _buildBottomNavigationBarItem(
-                      'Settings',
-                      'assets/images/tabbar/settingsTab/setting_black.png',
-                      'assets/images/tabbar/settingsTab/setting_black_fill.png',
-                      3,
+                      isDarkTheme: isDarkTheme,
+                      label: 'Settings',
+                      unselectedIconPath:
+                          'assets/images/tabbar/settingsTab/setting_black.png',
+                      unselectedIconPathDarkMode:
+                          'assets/images/tabbar/settingsTab/setting_white.png',
+                      selectedIconPath:
+                          'assets/images/tabbar/settingsTab/setting_black_fill.png',
+                      selectedIconPathDarkMode:
+                          'assets/images/tabbar/settingsTab/setting_white_fill.png',
+                      index: 3,
                     ),
                   ],
                 ),
@@ -262,16 +306,27 @@ class MainTabScreenState extends State<MainTabScreen> {
     );
   }
 
-  BottomNavigationBarItem _buildBottomNavigationBarItem(
-      String label,
-      String unselectedIconPath,
-      String selectedIconPath,
-      int index,
-      ) {
+  BottomNavigationBarItem _buildBottomNavigationBarItem({
+    required bool isDarkTheme,
+    required String label,
+    required String unselectedIconPath,
+    required String unselectedIconPathDarkMode,
+    required String selectedIconPath,
+    required String selectedIconPathDarkMode,
+    required int index,
+  }) {
     return BottomNavigationBarItem(
       icon: _selectedIndex == index
-          ? Image.asset(selectedIconPath)
-          : Image.asset(unselectedIconPath),
+          ? Image.asset(
+              isDarkTheme ? selectedIconPathDarkMode : selectedIconPath,
+              width: 25,
+              height: 25,
+            )
+          : Image.asset(
+              isDarkTheme ? unselectedIconPathDarkMode : unselectedIconPath,
+              width: 25,
+              height: 25,
+            ),
       label: label,
     );
   }

@@ -34,6 +34,10 @@ class CommonLocalDatasource {
     prefs.remove(key) as T?;
   }
 
+  Future<bool?> getThemeFromSharedPreferences() async {
+    return getDataFromSharedPreferences<bool>('isDarkTheme');
+  }
+
   Future<String> getCurrentAppVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;

@@ -15,15 +15,17 @@ class HomeLoaded extends HomeState {
   final HomeRealmEntity homeItems;
   final String nickname;
   final Map<String, dynamic> profileImage;
+  final bool isDarkTheme;
 
   const HomeLoaded(
       this.homeItems,
       this.nickname,
-      this.profileImage
+      this.profileImage,
+      this.isDarkTheme
       );
 
   @override
-  List<Object?> get props => [homeItems, nickname, profileImage];
+  List<Object?> get props => [homeItems, nickname, profileImage, isDarkTheme];
 }
 
 class HomeError extends HomeState {

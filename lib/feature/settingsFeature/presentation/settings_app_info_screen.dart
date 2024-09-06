@@ -6,12 +6,14 @@ class SettingsAppInfoScreen extends StatefulWidget {
   final String currentVersion;
   final SettingsBloc settingsBloc;
   final bool existUpdate;
+  final bool isDarkTheme;
 
   const SettingsAppInfoScreen({
     super.key,
     required this.currentVersion,
     required this.settingsBloc,
     required this.existUpdate,
+    required this.isDarkTheme,
   });
 
   @override
@@ -25,14 +27,65 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
   }
 
   Future<void> launchEmail() async {
-    final email = 'yyyng2@gmail.com';
-    final url = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(url)) {
+    const email = 'yyyng2@gmail.com';
+    final emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+      queryParameters: {
+        'subject': '[MMDApp] 문의',
+        'body': '내용을 입력해주세요.',
+      },
+    );
+
+    print('Launching email with URI: $emailUri');
+
+    if (await canLaunchUrl(emailUri)) {
       try {
-        await launchUrl(url);
+        await launchUrl(emailUri);
       } catch (e) {
-        print(e);
+        print('Error launching email: $e');
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('No Email App Found'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Please copy the email address below and open your email client manually:'),
+                const SizedBox(height: 10),
+                SelectableText(email), // Allow user to copy the email
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
       }
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No Email App Found'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Please copy the email address below and open your email client manually:'),
+              const SizedBox(height: 10),
+              SelectableText(email), // Allow user to copy the email
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -40,10 +93,14 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: widget.isDarkTheme ? Colors.black87 : Colors.white,
         leading: IconButton(
-          icon: const Row(
+          icon: Row(
             children: [
-              Icon(Icons.chevron_left),
+              Icon(
+                  Icons.chevron_left,
+                color: widget.isDarkTheme ? Colors.white : Colors.black,
+              ),
             ],
           ),
           onPressed: () {
@@ -56,17 +113,22 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/background/background.png',
+              widget.isDarkTheme
+                  ? 'assets/images/background/background_black.png'
+                  : 'assets/images/background/background.png',
               fit: BoxFit.cover,
-            ),
+            )
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/dIcon/day_color.png',
+                widget.isDarkTheme ? 'assets/images/dIcon/day_white.png' : 'assets/images/dIcon/day_color.png',
               ),
-              const Text("Make My Day"),
+              Text(
+                "Make My Day",
+                style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+              ),
               // TextButton(
               //   onPressed: () async {
               //     const appURL = 'instagram://user?username=_yyyng';
@@ -85,17 +147,29 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
               //     ],
               //   ),
               // ),
-              const Text("Developer: Dongyeong Kim"),
-              const Text("Illustrator: Heejeong Chae"),
+              Text(
+                  "Developer: Dongyeong Kim",
+                style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+              ),
+              Text(
+                  "Illustrator: Heejeong Chae",
+                style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+              ),
               TextButton(
                 onPressed: () {
                   launchEmail();
                 },
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Email: yyyng2@gmail.com"),
-                    Icon(Icons.mail),
+                    Text(
+                        "Email: yyyng2@gmail.com",
+                      style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+                    ),
+                    Icon(
+                      Icons.mail,
+                    color: widget.isDarkTheme ? Colors.white : Colors.black,
+                    ),
                   ],
                 ),
               ),
@@ -109,11 +183,17 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
                     await launchUrl(Uri.parse(webURL));
                   }
                 },
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Insta: @makemyday_app"),
-                    Icon(Icons.link_rounded),
+                    Text(
+                        "Insta: @makemyday_app",
+                      style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+                    ),
+                    Icon(
+                        Icons.link_rounded,
+                      color: widget.isDarkTheme ? Colors.white : Colors.black,
+                    ),
                   ],
                 ),
               ),
@@ -126,7 +206,10 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
                 },
                 child: Column(
                   children: [
-                    Text(widget.currentVersion),
+                    Text(
+                      widget.currentVersion,
+                      style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+                    ),
                   ],
                 ),
               ),

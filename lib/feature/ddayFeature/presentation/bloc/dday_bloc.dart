@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../domain/entities/dday_entity.dart';
 import '../../domain/usecases/dday_usecase.dart';
 
@@ -9,9 +10,10 @@ part 'dday_event.dart';
 part 'dday_state.dart';
 
 class DdayBloc extends Bloc<DdayEvent, DdayState> {
+  final CommonUsecase commonUsecase;
   final DdayUsecase usecase;
 
-  DdayBloc(this.usecase) : super(DdayInitial()) {
+  DdayBloc({required this.commonUsecase, required this.usecase}) : super(DdayInitial()) {
     on<FetchDdayItems>(_onFetchDdayItems);
     on<AddDdayItem>(_onAddDdayItem);
     on<UpdateDdayItem>(_onUpdateDdayItem);
@@ -23,7 +25,8 @@ class DdayBloc extends Bloc<DdayEvent, DdayState> {
     emit(DdayLoading());
     try {
       final items = await usecase.fetchDdayItems();
-      emit(DdayLoaded(items));
+      final isDarkTheme = await commonUsecase.getTheme();
+      emit(DdayLoaded(items, isDarkTheme));
     } catch (e) {
       emit(const DdayError("Failed to load dday items"));
     }

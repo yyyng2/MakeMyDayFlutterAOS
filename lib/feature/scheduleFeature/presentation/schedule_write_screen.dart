@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -11,8 +10,15 @@ class ScheduleWriteScreen extends StatefulWidget {
   final bool isEdit;
   final ScheduleEntity? scheduleEntity;
   final ScheduleBloc scheduleBloc;
+  final bool isDarkTheme;
 
-  const ScheduleWriteScreen({super.key, required this.isEdit, required this.scheduleEntity, required this.scheduleBloc});
+  const ScheduleWriteScreen({
+    super.key,
+    required this.isEdit,
+    required this.scheduleEntity,
+    required this.scheduleBloc,
+    required this.isDarkTheme,
+  });
 
   @override
   ScheduleWriteScreenState createState() => ScheduleWriteScreenState();
@@ -25,12 +31,14 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(microseconds: 100));
+    Future.delayed(const Duration(microseconds: 100));
     print('ScheduleEntity: ${widget.scheduleEntity}');
 
     selectedDate = widget.scheduleEntity?.date.toLocal() ?? DateTime.now();
     if (widget.scheduleEntity?.content != null) {
-      _contentController.text = (widget.scheduleEntity?.title ?? '')+('\n')+(widget.scheduleEntity?.content ?? '');
+      _contentController.text = (widget.scheduleEntity?.title ?? '') +
+          ('\n') +
+          (widget.scheduleEntity?.content ?? '');
     } else {
       _contentController.text = (widget.scheduleEntity?.title ?? '');
     }
@@ -60,118 +68,183 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text("Write Schedule"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
+        appBar: AppBar(
+          backgroundColor: widget.isDarkTheme ? Colors.black87 : Colors.white,
+          leading: IconButton(
+            icon: Icon(
+              Icons.chevron_left,
+              color: widget.isDarkTheme ? Colors.white : Colors.black,
+            ),
             onPressed: () {
-              if (_contentController.text.trim().isEmpty) {
-                Navigator.pop(context);
-              } else {
-                if (widget.isEdit) {
-                  final text = _contentController.text;
-                  final index = text.indexOf('\n');
-
-                  final title = index == -1 ? text : text.substring(0, index);
-                  final content = index == -1 ? '' : text.substring(index + 1);
-
-                  final newItem = ScheduleEntity(
-                    widget.scheduleEntity?.id ?? ObjectId(),
-                    title,
-                    selectedDate,
-                    content: content
-                  );
-                  print('UpdateScheduleItem!!!, $selectedDate');
-                  widget.scheduleBloc.add(UpdateScheduleItem(widget.scheduleEntity!.id, newItem, newItem.date));
-                } else {
-                  final textParts = _contentController.text.split('\n');
-                  final title = textParts[0];
-                  final content = textParts.length > 1 ? textParts[1] : '';
-
-                  final newItem = ScheduleEntity(
-                      widget.scheduleEntity?.id ?? ObjectId(),
-                      title,
-                      selectedDate,
-                      content: content
-                  );
-                  print('AddScheduleItem!!!, $selectedDate');
-                  widget.scheduleBloc.add(
-                      AddScheduleItem(newItem, selectedDate));
-                }
-
-                Navigator.pop(context);
-              }
+              Navigator.pop(context);
             },
           ),
-        ],
-      ),
-      body:
-      Stack(
-        children: [
-      Positioned.fill(
-      child: Image.asset(
-        'assets/images/background/background.png',
-        fit: BoxFit.cover,
-      ),
-    ),Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextButton(
-              onPressed: () async {
-                _selectDate();
-              },
-              child: Text(
-                DateFormat('yyyy-MM-dd').format(selectedDate),
-                style: const TextStyle(fontSize: 18),
+          title: Text(
+            widget.isEdit ? "Edit Schedule" : "Write Schedule",
+            style: TextStyle(
+                color: widget.isDarkTheme ? Colors.white : Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.check,
+                color: widget.isDarkTheme ? Colors.white : Colors.black,
               ),
-            ),
-            TextButton(
-              onPressed: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay(hour: selectedDate.hour, minute: selectedDate.minute),
-                );
+              onPressed: () {
+                if (_contentController.text.trim().isEmpty) {
+                  Navigator.pop(context);
+                } else {
+                  if (widget.isEdit) {
+                    final text = _contentController.text;
+                    final index = text.indexOf('\n');
 
-                if (picked != null) {
-                  setState(() {
-                    selectedDate = DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      picked.hour,
-                      picked.minute,
-                    ).toLocal();
-                    print(picked);
-                    print(selectedDate);
-                  });
+                    final title = index == -1 ? text : text.substring(0, index);
+                    final content =
+                        index == -1 ? '' : text.substring(index + 1);
+
+                    final newItem = ScheduleEntity(
+                        widget.scheduleEntity?.id ?? ObjectId(),
+                        title,
+                        selectedDate,
+                        content: content);
+
+                    widget.scheduleBloc.add(UpdateScheduleItem(
+                        widget.scheduleEntity!.id, newItem, newItem.date));
+                  } else {
+                    final textParts = _contentController.text.split('\n');
+                    final title = textParts[0];
+                    final content = textParts.length > 1 ? textParts[1] : '';
+
+                    final newItem = ScheduleEntity(
+                        widget.scheduleEntity?.id ?? ObjectId(),
+                        title,
+                        selectedDate,
+                        content: content);
+
+                    widget.scheduleBloc
+                        .add(AddScheduleItem(newItem, selectedDate));
+                  }
+
+                  Navigator.pop(context);
                 }
               },
-              child: Text(
-                DateFormat('kk:mm').format(selectedDate),
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _contentController,
-              maxLines: null,
-              decoration: const InputDecoration(
-                hintText: 'Enter content…',
-                border: OutlineInputBorder(),
-              ),
             ),
           ],
         ),
-      ),
-    ]));
+        body: Stack(children: [
+          Positioned.fill(
+              child: Image.asset(
+                widget.isDarkTheme
+                    ? 'assets/images/background/background_black.png'
+                    : 'assets/images/background/background.png',
+                fit: BoxFit.cover,
+              )
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: widget.isDarkTheme ? Colors.white : Colors.black,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                          8.0), // Optional: Adds rounded corners
+                    ),
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        _selectDate();
+                      },
+                      icon: Icon(
+                        Icons.calendar_today,
+                        color: widget.isDarkTheme ? Colors.white : Colors.black,
+                      ),
+                      label: Text(
+                        DateFormat('yyyy-MM-dd').format(selectedDate),
+                        style: TextStyle(
+                            color: widget.isDarkTheme
+                                ? Colors.white
+                                : Colors.black,
+                            fontSize: 18),
+                      ),
+                    )),
+                const SizedBox(height: 10),
+                Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: widget.isDarkTheme ? Colors.white : Colors.black,
+                        width: 1.0,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                          8.0), // Optional: Adds rounded corners
+                    ),
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(
+                              hour: selectedDate.hour,
+                              minute: selectedDate.minute),
+                        );
+
+                        if (picked != null) {
+                          setState(() {
+                            selectedDate = DateTime(
+                              selectedDate.year,
+                              selectedDate.month,
+                              selectedDate.day,
+                              picked.hour,
+                              picked.minute,
+                            ).toLocal();
+                            print(picked);
+                            print(selectedDate);
+                          });
+                        }
+                      },
+                      icon: Icon(
+                        Icons.access_time,
+                        color: widget.isDarkTheme ? Colors.white : Colors.black,
+                      ),
+                      label: Text(
+                        DateFormat('a hh:mm').format(selectedDate),
+                        style: TextStyle(
+                            color: widget.isDarkTheme
+                                ? Colors.white
+                                : Colors.black,
+                            fontSize: 18),
+                      ),
+                    )),
+                const SizedBox(height: 16),
+                TextField(
+                    controller: _contentController,
+                    maxLines: null,
+                    decoration: InputDecoration(
+                      hintText: 'Enter content…',
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              widget.isDarkTheme ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color:
+                              widget.isDarkTheme ? Colors.blue : Colors.black,
+                        ),
+                      ),
+                    ),
+                    cursorColor:
+                        widget.isDarkTheme ? Colors.blue : Colors.black,
+                    style: TextStyle(
+                        color:
+                            widget.isDarkTheme ? Colors.white : Colors.black)),
+              ],
+            ),
+          ),
+        ]));
   }
 }

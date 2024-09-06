@@ -9,11 +9,13 @@ import 'bloc/settings_bloc.dart';
 class SettingsEditProfileScreen extends StatefulWidget {
   final String? nickname;
   final SettingsBloc settingsBloc;
+  final bool isDarkTheme;
 
   const SettingsEditProfileScreen({
     super.key,
     required this.nickname,
-    required this.settingsBloc
+    required this.settingsBloc,
+    required this.isDarkTheme,
   });
 
   @override
@@ -49,10 +51,28 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Settings'),
+        backgroundColor: widget.isDarkTheme ? Colors.black87 : Colors.white,
+        title: Text('Profile Settings',
+          style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
+        ),
+        leading: IconButton(
+          icon: Row(
+            children: [
+              Icon(
+                Icons.chevron_left,
+                color: widget.isDarkTheme ? Colors.white : Colors.black,
+              ),
+            ],
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.save),
+            icon: Icon(
+                Icons.save,
+            color: widget.isDarkTheme ? Colors.white : Colors.black,),
             onPressed: _saveProfile,
           ),
         ],
@@ -60,10 +80,12 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/background.png',
-              fit: BoxFit.cover,
-            ),
+              child: Image.asset(
+                widget.isDarkTheme
+                    ? 'assets/images/background/background_black.png'
+                    : 'assets/images/background/background.png',
+                fit: BoxFit.cover,
+              )
           ),
           Center(
             child: Column(
@@ -74,7 +96,7 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
                   backgroundColor: Colors.transparent,
                   backgroundImage: _image != null
                       ? FileImage(_image!)
-                      : const AssetImage('assets/images/dIcon/day_color.png')
+                      : AssetImage(widget.isDarkTheme ? 'assets/images/dIcon/day_white.png' : 'assets/images/dIcon/day_color.png')
                   as ImageProvider,
                 ),
                 const SizedBox(height: 16),
@@ -102,14 +124,16 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton.icon(
+                      onPressed: _resetProfile,
+                      icon: Icon(Icons.refresh, color: Colors.red,),
+                      label: Text(
+                        'Reset',
+                        style: TextStyle(color: Colors.red),),
+                    ),
+                    ElevatedButton.icon(
                       onPressed: _loadImage,
                       icon: const Icon(Icons.image),
                       label: const Text('Load Image'),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _resetProfile,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reset'),
                     ),
                   ],
                 ),

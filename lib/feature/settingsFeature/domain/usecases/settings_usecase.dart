@@ -14,4 +14,12 @@ class SettingsUsecase {
   Future<void> setNickname(String nickname) async {
     await settingsRepository.setNickname(nickname);
   }
+
+  Future<bool?> getTheme() async {
+    return await settingsRepository.getTheme();
+  }
+
+  Future<void> setTheme(bool value) async {
+    await settingsRepository.setTheme(value);
+  }
 }

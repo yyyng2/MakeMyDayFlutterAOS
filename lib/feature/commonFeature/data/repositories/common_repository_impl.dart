@@ -7,7 +7,7 @@ import '../../domain/repositories/common_repository.dart';
 
 class CommonRepositoryImpl implements CommonRepository {
   final CommonLocalDatasource localDatasource;
-  final CommonRemoteDatasource remoteDatasource;
+  final CommonRemoteDatasource? remoteDatasource;
 
   CommonRepositoryImpl({required this.localDatasource, required this.remoteDatasource});
 
@@ -16,7 +16,7 @@ class CommonRepositoryImpl implements CommonRepository {
     try {
       final installedVersion = await localDatasource.getCurrentAppVersion();
       final packageName = await localDatasource.getCurrentAppPackageName();
-      final storeVersion = await remoteDatasource.getStoreVersion(packageName);
+      final storeVersion = await remoteDatasource?.getStoreVersion(packageName);
 
       return VersionInfoEntity(installedVersion: installedVersion, storeVersion: storeVersion).isUpdateAvailable;
     } catch (e) {
@@ -34,5 +34,11 @@ class CommonRepositoryImpl implements CommonRepository {
     } else {
       throw "Could not launch $uri";
     }
+  }
+
+  @override
+  Future<bool> getTheme() async {
+    final result = await localDatasource.getThemeFromSharedPreferences() ?? false ;
+    return result;
   }
 }

@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:intl/intl.dart';
 
+import '../../commonFeature/data/datasources/common_local_datasource.dart';
+import '../../commonFeature/data/repositories/common_repository_impl.dart';
+import '../../commonFeature/domain/usecases/common_usecase.dart';
 import '../../commonFeature/presentation/navigation/app_router.dart';
 import '../data/repositories/schedule_repository_impl.dart';
 import '../domain/usecases/schedule_usecase.dart';
@@ -17,6 +20,9 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class ScheduleScreenState extends State<ScheduleScreen> {
+  final CommonLocalDatasource commonLocalDatasource = CommonLocalDatasource();
+  late final CommonRepositoryImpl commonRepositoryImpl;
+  late final CommonUsecase commonUsecase;
   late Realm realm;
   late ScheduleRepositoryImpl scheduleRepositoryImpl;
   late ScheduleUsecase scheduleUsecase;
@@ -28,12 +34,15 @@ class ScheduleScreenState extends State<ScheduleScreen> {
   @override
   void initState() {
     super.initState();
+    commonRepositoryImpl = CommonRepositoryImpl(
+        localDatasource: commonLocalDatasource, remoteDatasource: null);
+    commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
     final config = Configuration.local([ScheduleEntity.schema]);
-    print(config.path);
     realm = Realm(config);
     scheduleRepositoryImpl = ScheduleRepositoryImpl(realm);
     scheduleUsecase = ScheduleUsecase(repository: scheduleRepositoryImpl);
-    scheduleBloc = ScheduleBloc(scheduleUsecase);
+    scheduleBloc =
+        ScheduleBloc(commonUsecase: commonUsecase, usecase: scheduleUsecase);
 
     scheduleBloc.add(FetchScheduleItemsByDate(currentDate));
   }
@@ -88,45 +97,60 @@ class ScheduleScreenState extends State<ScheduleScreen> {
       //     automaticallyImplyLeading: false,
       // title: const Text('Schedule')
       // ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/background/background.png',
-              fit: BoxFit.cover,
-            ),
-          ),
+      body:
+          // Stack(
+          //   children: [
+          // Positioned.fill(
+          //   child: Image.asset(
+          //     'assets/images/background/background.png',
+          //     fit: BoxFit.cover,
+          //   ),
+          // ),
           BlocBuilder<ScheduleBloc, ScheduleState>(
-            bloc: scheduleBloc,
-            builder: (context, state) {
-              if (state is ScheduleInitial) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is ScheduleLoaded) {
-                return Column(
-                  children: [
-                    _buildHeader(),
-                    _buildDaysOfWeek(),
-                    _buildCalendarGrid(state.scheduleItems),
-                    _buildScheduleList(state.scheduleTargetItems),
-                  ],
-                );
-              } else if (state is ScheduleError) {
-                return Center(
-                    child: Text('Failed to load schedules: ${state.message}'));
-              } else {
-                return const Center(child: Text('Unknown state'));
-              }
-            },
-          ),
-        ],
+        bloc: scheduleBloc,
+        builder: (context, state) {
+          if (state is ScheduleInitial) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ScheduleLoaded) {
+            return Stack(children: [
+              Positioned.fill(
+                  child: Image.asset(
+                    state.isDarkTheme
+                        ? 'assets/images/background/background_black.png'
+                        : 'assets/images/background/background.png',
+                    fit: BoxFit.cover,
+                  )
+              ),
+              Column(
+                children: [
+                  _buildHeader(state.isDarkTheme),
+                  _buildDaysOfWeek(state.isDarkTheme),
+                  _buildCalendarGrid(state.scheduleItems, state.isDarkTheme),
+                  _buildScheduleList(
+                      state.scheduleTargetItems, state.isDarkTheme),
+                ],
+              )
+            ]);
+          } else if (state is ScheduleError) {
+            return Center(
+                child: Text('Failed to load schedules: ${state.message}'));
+          } else {
+            return const Center(child: Text('Unknown state'));
+          }
+        },
       ),
+      //   ],
+      // ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'scheduleScreen',
         onPressed: () {
           Navigator.pushNamed(context, AppRouter.scheduleWrite, arguments: {
             'isEdit': false,
             'scheduleObject': ScheduleEntity(ObjectId(), '', currentDate),
-            'scheduleBloc': scheduleBloc
+            'scheduleBloc': scheduleBloc,
+            'isDarkTheme': (scheduleBloc.state is ScheduleLoaded)
+                ? (scheduleBloc.state as ScheduleLoaded).isDarkTheme
+                : false,
           });
         },
         backgroundColor: Colors.white,
@@ -135,7 +159,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDarkTheme) {
     final monthYear = DateFormat('MMMM yyyy').format(getCurrentMonthDate());
 
     return Padding(
@@ -144,12 +168,17 @@ class ScheduleScreenState extends State<ScheduleScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(monthYear,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              style: TextStyle(
+                  color: isDarkTheme ? Colors.white : Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.chevron_left),
+                icon: Icon(
+                  Icons.chevron_left,
+                  color: isDarkTheme ? Colors.white : Colors.black,
+                ),
                 onPressed: () {
                   setState(() {
                     targetMonth -= 1;
@@ -161,7 +190,10 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_right),
+                icon: Icon(
+                  Icons.chevron_right,
+                  color: isDarkTheme ? Colors.white : Colors.black,
+                ),
                 onPressed: () {
                   setState(() {
                     targetMonth += 1;
@@ -179,7 +211,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _buildDaysOfWeek() {
+  Widget _buildDaysOfWeek(bool isDarkTheme) {
     final daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return Row(
@@ -187,15 +219,18 @@ class ScheduleScreenState extends State<ScheduleScreen> {
         return Expanded(
           child: Center(
             child: Text(day,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: isDarkTheme ? Colors.white : Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
           ),
         );
       }).toList(),
     );
   }
 
-  Widget _buildCalendarGrid(List<ScheduleEntity> scheduleItems) {
+  Widget _buildCalendarGrid(
+      List<ScheduleEntity> scheduleItems, bool isDarkTheme) {
     final dates = extractDates();
 
     return Expanded(
@@ -237,7 +272,13 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                     style: TextStyle(
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.white : Colors.black,
+                      color: isDarkTheme
+                          ? isSelected
+                              ? Colors.black
+                              : Colors.white
+                          : isSelected
+                              ? Colors.white
+                              : Colors.black,
                     ),
                   ),
                   if (hasTask)
@@ -255,68 +296,121 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _buildScheduleList(List<ScheduleEntity> scheduleItems) {
+  Widget _buildScheduleList(
+      List<ScheduleEntity> scheduleItems, bool isDarkTheme) {
     return Expanded(
-      child: ListView.builder(
-        itemCount: scheduleItems.length,
-        itemBuilder: (context, index) {
-          final item = scheduleItems[index];
+      child: scheduleItems.isEmpty
+          ? ListView.builder(
+              itemCount: 1,
+              itemBuilder: (context, index) {
+                return Material(
+                    color: Colors.transparent,
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          tileColor:
+                              isDarkTheme ? Colors.black87 : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          title: Text(
+                            "일정이 없어요.",
+                            style: TextStyle(
+                                color:
+                                    isDarkTheme ? Colors.white : Colors.black),
+                          ),
+                          subtitle: Text(
+                            "일정을 작성해보세요.",
+                            style: TextStyle(
+                                color:
+                                    isDarkTheme ? Colors.white : Colors.black),
+                          ),
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRouter.scheduleWrite,
+                              arguments: {
+                                'isEdit': false,
+                                'scheduleObject':
+                                    ScheduleEntity(ObjectId(), '', currentDate),
+                                'scheduleBloc': scheduleBloc,
+                                'isDarkTheme': isDarkTheme,
+                              },
+                            );
+                          },
+                        )));
+              })
+          : ListView.builder(
+              itemCount: scheduleItems.length,
+              itemBuilder: (context, index) {
+                final item = scheduleItems[index];
 
-          return Material(
-              color: Colors.transparent,
-              child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    tileColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    title: Text(item.title),
-                    subtitle:
-                        Text(DateFormat('HH:mm').format(item.date.toLocal())),
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRouter.scheduleWrite,
-                        arguments: {
-                          'isEdit': true,
-                          'scheduleObject': item,
-                          'scheduleBloc': scheduleBloc,
-                        },
-                      );
-                    },
-                    onLongPress: () {
-                      //Show a dialog for confirmation
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text("Confirm Delete"),
-                            content: const Text(
-                                "Are you sure you want to delete this item?"),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                // Close the dialog
-                                child: const Text("Cancel"),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  scheduleBloc.add(
-                                      DeleteScheduleItem(item.id, currentDate));
-                                  Navigator.pop(context); // Close the dialog
-                                },
-                                child: const Text("Delete",
-                                    style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  )));
-        },
-      ),
+                return Material(
+                    color: Colors.transparent,
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          tileColor:
+                              isDarkTheme ? Colors.black87 : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          title: Text(
+                            item.title,
+                            style: TextStyle(
+                                color:
+                                    isDarkTheme ? Colors.white : Colors.black),
+                          ),
+                          subtitle: Text(
+                            DateFormat('a hh:mm').format(item.date.toLocal()),
+                            style: TextStyle(
+                                color:
+                                    isDarkTheme ? Colors.white : Colors.black),
+                          ),
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              AppRouter.scheduleWrite,
+                              arguments: {
+                                'isEdit': true,
+                                'scheduleObject': item,
+                                'scheduleBloc': scheduleBloc,
+                                'isDarkTheme': isDarkTheme,
+                              },
+                            );
+                          },
+                          onLongPress: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Confirm Delete"),
+                                  content: const Text(
+                                      "Are you sure you want to delete this item?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      // Close the dialog
+                                      child: const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        scheduleBloc.add(DeleteScheduleItem(
+                                            item.id, currentDate));
+                                        Navigator.pop(
+                                            context); // Close the dialog
+                                      },
+                                      child: const Text("Delete",
+                                          style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        )));
+              },
+            ),
     );
   }
 }

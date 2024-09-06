@@ -14,17 +14,23 @@ class SettingsLoading extends SettingsState {}
 class SettingsLoaded extends SettingsState {
   final String nickname;
   final bool existUpdate;
-
-  const SettingsLoaded(this.nickname, this.existUpdate);
+  final bool isDarkTheme;
 
   @override
-  List<Object?> get props => [nickname, this.existUpdate];
+  const SettingsLoaded({
+    required this.nickname,
+    required this.existUpdate,
+    required this.isDarkTheme,
+  });
+
+  @override
+  List<Object?> get props => [nickname, existUpdate, isDarkTheme];
 }
 
 class SettingsError extends SettingsState {
   final String message;
 
-  const SettingsError(this.message);
+  const SettingsError({required this.message});
 
   @override
   List<Object?> get props => [message];

@@ -19,3 +19,12 @@ class SetNickname extends SettingsEvent {
 }
 
 class GoToStoreEvent extends SettingsEvent {}
+
+class ChangeThemeEvent extends SettingsEvent {
+  final bool isDarkTheme;
+
+  const ChangeThemeEvent(this.isDarkTheme);
+
+  @override
+  List<Object?> get props => [isDarkTheme];
+}
