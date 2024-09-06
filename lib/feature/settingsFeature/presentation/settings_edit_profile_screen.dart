@@ -166,6 +166,8 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
     final existingImage = File(path);
 
     if (_image != null) {
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
       await _image!.copy(path);
     } else {
       if (await existingImage.exists()) {

@@ -221,6 +221,8 @@ class MainTabScreenState extends State<MainTabScreen> {
                   currentIndex: _selectedIndex,
                   onTap: (index) {
                     setState(() {
+                      PaintingBinding.instance.imageCache.clear();
+                      PaintingBinding.instance.imageCache.clearLiveImages();
                       _selectedIndex = index;
 
                       if (index == 0) {
