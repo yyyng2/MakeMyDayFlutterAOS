@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:make_my_day/infrastructure/manager/widget_manager.dart';
 import 'package:realm/realm.dart';
 
 import '../domain/entities/dday_entity.dart';
@@ -44,7 +46,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
     super.dispose();
   }
 
-  void _handleSave() {
+  void _handleSave() async {
     if (_contentController.text.trim().isEmpty) {
       Navigator.pop(context);
     } else {
@@ -58,11 +60,18 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
       );
 
       if (widget.isEdit) {
+        final ddayId = widget.ddayEntity?.id ?? ObjectId();
         widget.ddayBloc
-            .add(UpdateDdayItem(widget.ddayEntity?.id ?? ObjectId(), newItem));
+            .add(UpdateDdayItem(ddayId, newItem));
       } else {
         widget.ddayBloc.add(AddDdayItem(newItem));
       }
+
+      await HomeWidget.saveWidgetData<String>('force_update', DateTime.now().toString());
+      await HomeWidget.updateWidget(
+        name: 'HomeScreenWidget',
+        qualifiedAndroidName: 'io.github.yyyng2.make_my_day.HomeScreenWidget',
+      );
 
       Navigator.pop(context);
     }

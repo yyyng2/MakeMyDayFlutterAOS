@@ -13,6 +13,7 @@ import '../../../scheduleFeature/presentation/schedule_write_screen.dart';
 import '../../../settingsFeature/presentation/bloc/settings_bloc.dart';
 import '../../../settingsFeature/presentation/settings_edit_profile_screen.dart';
 import '../../../splashFeature/presentation/splash_screen.dart';
+import '../../../ddaySelectionFeature/presentation/dday_selection_screen.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -22,8 +23,19 @@ class AppRouter {
   static const String appInfo = '/appInfo';
   static const String editProfile = '/editProfile';
   static const String theme = '/theme';
+  static const String ddaySelection = '/ddaySelection';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    // final uri = Uri.parse(settings.name ?? '');
+    // final routeName = uri.path;
+    // final params = uri.queryParameters;
+    // print('uri: $uri, $routeName, $params, ${settings.name}');
+    if (settings.name.toString().contains('appWidgetId=')) {
+      final widgetId = settings.name.toString().split('=').asMap()[1];
+      return MaterialPageRoute(
+        builder: (_) => DdaySelectionScreen(widgetId: widgetId ?? ''),
+      );
+    }
     switch (settings.name) {
       case AppRouter.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
@@ -104,6 +116,13 @@ class AppRouter {
                   settingsBloc: settingsBloc,
                   mainTabBloc: mainTabBloc,
                 ));
+
+      case AppRouter.ddaySelection:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final widgetId = args?['widgetId'] as String?;
+        return MaterialPageRoute(
+          builder: (_) => DdaySelectionScreen(widgetId: widgetId ?? ''),
+        );
 
       default:
         return MaterialPageRoute(

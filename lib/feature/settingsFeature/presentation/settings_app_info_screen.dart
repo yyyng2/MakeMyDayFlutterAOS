@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'bloc/settings_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,8 +33,8 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
       scheme: 'mailto',
       path: email,
       queryParameters: {
-        'subject': '[MMDApp] 문의',
-        'body': '내용을 입력해주세요.',
+        'subject': "appInfoEmailTitle".tr(),
+        'body': "appInfoEmailContents".tr(),
       },
     );
 
@@ -48,11 +49,11 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('No Email App Found'),
-            content: Column(
+            content: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Please copy the email address below and open your email client manually:'),
-                const SizedBox(height: 10),
+                Text('Please copy the email address below and open your email client manually:'),
+                SizedBox(height: 10),
                 SelectableText(email), // Allow user to copy the email
               ],
             ),
@@ -70,11 +71,11 @@ class SettingsAppInfoScreenState extends State<SettingsAppInfoScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('No Email App Found'),
-          content: Column(
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Please copy the email address below and open your email client manually:'),
-              const SizedBox(height: 10),
+              Text('Please copy the email address below and open your email client manually:'),
+              SizedBox(height: 10),
               SelectableText(email), // Allow user to copy the email
             ],
           ),

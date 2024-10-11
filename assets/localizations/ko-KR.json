@@ -1,0 +1,14 @@
+{
+  "updateRequiredTitle": "업데이트가 필요해요.",
+  "updateRequiredContents": "새 버전이 존재해요, 업데이트를 진행 해주세요.",
+  "updateRequiredGoStoreButtonTitle": "스토어로 가기",
+
+  "appInfoEmailTitle": "[MMDApp] 문의",
+  "appInfoEmailContents": "[MMDApp] ",
+
+  "editProfileNamePlaceHolder": "닉네임을 입력해주세요",
+  "editProfileImageReset": "초기화",
+  "editProfileImageLoad": "이미지 불러오기",
+
+  "homeWidgetEmptyTitle": "디데이를 선택해주세요."
+}

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -26,7 +27,7 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   File? _image;
   final TextEditingController _nicknameController = TextEditingController();
-  late String placeholderText = 'Enter your nickname';
+  late String placeholderText = 'editProfileNamePlaceHolder'.tr();
 
   @override
   void initState() {
@@ -125,15 +126,15 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: _resetProfile,
-                      icon: Icon(Icons.refresh, color: Colors.red,),
-                      label: Text(
-                        'Reset',
-                        style: TextStyle(color: Colors.red),),
+                      icon: const Icon(Icons.refresh, color: Colors.red,),
+                      label: const Text(
+                        "editProfileImageReset",
+                        style: TextStyle(color: Colors.red),).tr(),
                     ),
                     ElevatedButton.icon(
                       onPressed: _loadImage,
                       icon: const Icon(Icons.image),
-                      label: const Text('Load Image'),
+                      label: const Text("editProfileImageLoad").tr(),
                     ),
                   ],
                 ),

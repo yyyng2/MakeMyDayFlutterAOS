@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="appwidget_text">Title</string>
+    <string name="appwidget_contents"></string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">D-day</string>
+</resources>

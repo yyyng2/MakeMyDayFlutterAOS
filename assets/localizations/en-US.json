@@ -1,0 +1,14 @@
+{
+  "updateRequiredTitle": "Update Required",
+  "updateRequiredContents": "A new version is available. Please update the app.",
+  "updateRequiredGoStoreButtonTitle": "Go to store",
+
+  "appInfoEmailTitle": "[MMDApp] ",
+  "appInfoEmailContents": "",
+
+  "editProfileNamePlaceHolder": "Enter your nickname",
+  "editProfileImageReset": "Reset",
+  "editProfileImageLoad": "Load Image",
+
+  "homeWidgetEmptyTitle": "Please select D-Day."
+}

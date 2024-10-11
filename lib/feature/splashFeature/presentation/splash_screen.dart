@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../infrastructure/network/network_client.dart';
@@ -37,6 +39,8 @@ class SplashScreenState extends State<SplashScreen> {
 
     // Start the version check
     _splashBloc.add(CheckVersionEvent());
+
+    HomeWidget.saveWidgetData<String>('homeWidgetEmptyTitle',  'homeWidgetEmptyTitle'.tr());
   }
 
   @override
@@ -76,14 +80,14 @@ class SplashScreenState extends State<SplashScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Update Required'),
-          content: const Text('A new version is available. Please update the app.'),
+          title: const Text('updateRequiredTitle').tr(),
+          content: const Text('updateRequiredContents').tr(),
           actions: [
             TextButton(
               onPressed: () async {
                 _splashBloc.add(GoToStoreEvent());
               },
-              child: const Text('Go to Store'),
+              child: const Text('updateRequiredGoStoreButtonTitle').tr(),
             ),
           ],
         );
