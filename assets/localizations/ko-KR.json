@@ -1,7 +1,31 @@
 {
+  "commonConfirm": "확인",
+  "commonCancel": "취소",
+  "commonConfirmDeleteTitle": "삭제 확인",
+  "commonConfirmDelete": "삭제하시겠습니까?",
+  "commonDelete": "삭제",
+
   "updateRequiredTitle": "업데이트가 필요해요.",
   "updateRequiredContents": "새 버전이 존재해요, 업데이트를 진행 해주세요.",
   "updateRequiredGoStoreButtonTitle": "스토어로 가기",
+
+  "homeWelcome": "안녕하세요. :D",
+  "homeNoScheduleToday": "오늘의 일정이 없어요.",
+  "homeNoScheduleTodayAdd": "일정을 작성해보세요.",
+  "homeScheduleToday": "오늘의 일정을 알려드릴게요.",
+  "homeNoDday": "등록된 디데이가 없어요.",
+  "homeNoDdayAdd": "디데이를 작성해보세요.",
+  "homeDdayToday": "디데이를 알려드릴게요.",
+
+  "writeScheduleTitle": "일정 등록",
+  "writeDdayTitle": "디데이 등록",
+  "editScheduleTitle": "일정 수정",
+  "editDdayTitle": "디데이 수정",
+  "commonWritePlaceHolder": "내용을 입력해주세요.",
+
+  "scheduleEmpty": "일정이 없어요.",
+
+  "ddayWritePlusDay": "오늘 기준 1일",
 
   "appInfoEmailTitle": "[MMDApp] 문의",
   "appInfoEmailContents": "[MMDApp] ",
@@ -10,5 +34,13 @@
   "editProfileImageReset": "초기화",
   "editProfileImageLoad": "이미지 불러오기",
 
-  "homeWidgetEmptyTitle": "디데이를 선택해주세요."
+  "settingsMenuAppInfo": "앱 정보",
+  "settingsMenuEditProfile": "프로필 변경",
+  "settingsMenuChangeTheme": "테마 변경",
+  "settingsEditProfileReset": "초기화",
+  "settingsEditProfileLoadImage": "이미지 불러오기",
+  "settingsChangeThemeTitle": "테마를 변경해볼까요?",
+
+  "homeWidgetEmptyTitle": "디데이를 선택해주세요.",
+  "chooseDdayTitle": "디데이 선택"
 }

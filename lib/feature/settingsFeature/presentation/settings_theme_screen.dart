@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:make_my_day/feature/mainTabFeature/presentation/bloc/main_tab_bloc.dart';
 import 'bloc/settings_bloc.dart';
@@ -35,7 +36,7 @@ class SettingsThemeScreenState extends State<SettingsThemeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            '테마를 변경해볼까요?',
+            'settingsChangeThemeTitle'.tr(),
             style: TextStyle(
               color: widget.isDarkTheme ? Colors.white : Colors.black,
                 fontSize: 18,
@@ -72,7 +73,7 @@ class SettingsThemeScreenState extends State<SettingsThemeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildActionButton(
-                label: '취소',
+                label: 'commonCancel'.tr(),
                 color: Colors.red,
                 textColor: widget.isDarkTheme ? Colors.black : Colors.white,
                 onTap: () {
@@ -81,7 +82,7 @@ class SettingsThemeScreenState extends State<SettingsThemeScreen> {
               ),
               const SizedBox(width: 10),
               _buildActionButton(
-                label: '확인',
+                label: 'commonConfirm'.tr(),
                 color: widget.isDarkTheme ? Colors.white : Colors.black,
                 textColor: widget.isDarkTheme ? Colors.black : Colors.white,
                 onTap: () {

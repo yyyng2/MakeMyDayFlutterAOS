@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:make_my_day/infrastructure/manager/widget_manager.dart';
@@ -72,7 +74,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
         name: 'HomeScreenWidget',
         qualifiedAndroidName: 'io.github.yyyng2.make_my_day.HomeScreenWidget',
       );
-
+      FlutterBackgroundService().invoke('updateData');
       Navigator.pop(context);
     }
   }
@@ -107,7 +109,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
             },
           ),
           title: Text(
-            widget.isEdit ? "Edit Dday" : "Write Dday",
+            widget.isEdit ? "editDdayTitle".tr() : "writeDdayTitle".tr(),
             style: TextStyle(
                 color: widget.isDarkTheme ? Colors.white : Colors.black),
           ),
@@ -166,7 +168,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
                 SwitchListTile(
                   activeColor: Colors.blueAccent,
                   title: Text(
-                    "오늘부터 1일",
+                    "ddayWritePlusDay".tr(),
                     style: TextStyle(
                         color:
                             widget.isDarkTheme ? Colors.white : Colors.black),
@@ -184,7 +186,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
                     controller: _contentController,
                     maxLines: null,
                     decoration: InputDecoration(
-                      hintText: 'Enter content…',
+                      hintText: 'commonWritePlaceHolder'.tr(),
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(

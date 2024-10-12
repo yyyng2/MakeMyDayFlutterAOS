@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:realm/realm.dart';
@@ -40,7 +41,7 @@ class _DdaySelectionScreenState extends State<DdaySelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('D-day 선택'),
+        title: Text('chooseDdayTitle'.tr()),
         automaticallyImplyLeading: false,
       ),
       body: ListView.builder(

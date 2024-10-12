@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:permission_handler/permission_handler.dart';
 
+import '../../../infrastructure/service/background_service.dart';
 import '../../commonFeature/data/datasources/common_local_datasource.dart';
 import '../../commonFeature/data/repositories/common_repository_impl.dart';
 import '../../commonFeature/domain/usecases/common_usecase.dart';
@@ -48,6 +50,20 @@ class MainTabScreenState extends State<MainTabScreen> {
     commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
     mainTabBloc = MainTabBloc(commonUsecase);
     mainTabBloc.add(LoadThemeEvent());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("addPostFrameCallback");
+      askPermission();
+    });
+  }
+
+  Future<void> askPermission() async {
+    if (await Permission.notification.request().isGranted) {
+    await initializeBackgroundService();
+    } else {
+    await Permission.notification.request();
+    print('Notification permission denied');
+    }
   }
 
   void _createNativeAd(bool isDarkTheme) {

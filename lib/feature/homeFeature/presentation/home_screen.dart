@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -134,15 +135,15 @@ class HomeScreenState extends State<HomeScreen> {
                                 nickname: state.nickname,
                                 topMessage: DateFormat('yyyy-MM-dd EEE')
                                     .format(DateTime.now()),
-                                bottomMessage: 'Welcome',
+                                bottomMessage: 'homeWelcome'.tr(),
                               ),
                               if (state.homeItems.scheduleItems.isEmpty)
                                 MessageView(
                                   isDarkTheme: state.isDarkTheme,
                                   profileImageInfo: state.profileImage,
                                   nickname: state.nickname,
-                                  topMessage: "오늘의 일정이 없어요.",
-                                  bottomMessage: "오늘의 일정을 추가해보세요.",
+                                  topMessage: "homeNoScheduleToday".tr(),
+                                  bottomMessage: "homeNoScheduleTodayAdd".tr(),
                                 )
                               else ...[
                                 OneMessageView(
@@ -153,7 +154,7 @@ class HomeScreenState extends State<HomeScreen> {
                                   showDday: false,
                                   showDate: false,
                                   plusDay: false,
-                                  titleMessage: "오늘의 일정을 알려드릴게요.",
+                                  titleMessage: "homeScheduleToday".tr(),
                                   date: DateTime.now(),
                                 ),
                                 for (var item in state.homeItems.scheduleItems)
@@ -188,8 +189,8 @@ class HomeScreenState extends State<HomeScreen> {
                                   isDarkTheme: state.isDarkTheme,
                                   profileImageInfo: state.profileImage,
                                   nickname: state.nickname,
-                                  topMessage: "등록된 디데이가 없어요.",
-                                  bottomMessage: "디데이를 추가해보세요.",
+                                  topMessage: "homeNoDday".tr(),
+                                  bottomMessage: "homeNoDdayAdd".tr(),
                                 )
                               else ...[
                                 OneMessageView(
@@ -200,7 +201,7 @@ class HomeScreenState extends State<HomeScreen> {
                                   showDday: false,
                                   showDate: false,
                                   plusDay: false,
-                                  titleMessage: "디데이를 알려드릴게요.",
+                                  titleMessage: "homeDdayToday".tr(),
                                   date: DateTime.now(),
                                 ),
                                 if (state.homeItems.ddayItems.isNotEmpty)
@@ -541,7 +542,7 @@ class HomeWriteButtonView extends StatelessWidget {
           ElevatedButton(
             onPressed: onSchedulePressed,
             child: Text(
-                "Add Schedule",
+                "writeScheduleTitle".tr(),
               style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
             ),
           ),
@@ -549,7 +550,7 @@ class HomeWriteButtonView extends StatelessWidget {
           ElevatedButton(
             onPressed: onDdayPressed,
             child: Text(
-                "Add D-Day",
+                "writeDdayTitle".tr(),
               style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),
             ),
           ),

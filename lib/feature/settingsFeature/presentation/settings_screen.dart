@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
@@ -92,7 +93,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                             title: Text(
-                              option.name.toString(),
+                              option.name.toString().tr(),
                               style: TextStyle(
                                 color: state.isDarkTheme
                                     ? Colors.white
@@ -102,7 +103,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                             onTap: () {
                               // Handle tap based on the selected option
                               switch (option) {
-                                case SettingsOptions.appInfo:
+                                case SettingsOptions.settingsMenuAppInfo:
                                   Navigator.pushNamed(
                                     context,
                                     AppRouter.appInfo,
@@ -114,7 +115,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                                     },
                                   );
                                   break;
-                                case SettingsOptions.editProfile:
+                                case SettingsOptions.settingsMenuEditProfile:
                                   Navigator.pushNamed(
                                     context,
                                     AppRouter.editProfile,
@@ -125,7 +126,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                                     },
                                   );
                                   break;
-                                case SettingsOptions.theme:
+                                case SettingsOptions.settingsMenuChangeTheme:
                                   Navigator.pushNamed(
                                     context,
                                     AppRouter.theme,

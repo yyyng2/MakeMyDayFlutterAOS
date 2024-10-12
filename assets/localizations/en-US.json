@@ -1,7 +1,31 @@
 {
+  "commonConfirm": "Confirm",
+  "commonCancel": "Cancel",
+  "commonConfirmDeleteTitle": "Confirm Delete",
+  "commonConfirmDelete": "Do you want to delete it?",
+  "commonDelete": "Delete",
+
   "updateRequiredTitle": "Update Required",
   "updateRequiredContents": "A new version is available. Please update the app.",
   "updateRequiredGoStoreButtonTitle": "Go to store",
+
+  "homeWelcome": "Welcome. :D",
+  "homeNoScheduleToday": "There is no schedule for today.",
+  "homeNoScheduleTodayAdd": "Add today's schedule.",
+  "homeScheduleToday": "I will tell you today's schedule.",
+  "homeNoDday": "There is no registered D-day.",
+  "homeNoDdayAdd": "Add D-day.",
+  "homeDdayToday": "I will tell you D-day.",
+
+  "writeScheduleTitle": "Write schedule",
+  "writeDdayTitle": "Write D-day",
+  "editScheduleTitle": "Edit schedule",
+  "editDdayTitle": "Edit D-day",
+  "commonWritePlaceHolder": "Enter the content.",
+
+  "scheduleEmpty": "There is no schedule.",
+
+  "ddayWritePlusDay": "1 day from today",
 
   "appInfoEmailTitle": "[MMDApp] ",
   "appInfoEmailContents": "",
@@ -10,5 +34,13 @@
   "editProfileImageReset": "Reset",
   "editProfileImageLoad": "Load Image",
 
-  "homeWidgetEmptyTitle": "Please select D-Day."
+  "settingsMenuAppInfo": "App Info",
+  "settingsMenuEditProfile": "Edit Profile",
+  "settingsMenuChangeTheme": "Change Theme",
+  "settingsEditProfileReset": "Reset",
+  "settingsEditProfileLoadImage": "Load Image",
+  "settingsChangeThemeTitle": "Shall we change the theme?",
+
+  "homeWidgetEmptyTitle": "Please select D-Day.",
+  "chooseDdayTitle": "Choose D-day"
 }

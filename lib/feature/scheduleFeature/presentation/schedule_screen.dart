@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:intl/intl.dart';
@@ -314,13 +316,13 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                           title: Text(
-                            "일정이 없어요.",
+                            "scheduleEmpty".tr(),
                             style: TextStyle(
                                 color:
                                     isDarkTheme ? Colors.white : Colors.black),
                           ),
                           subtitle: Text(
-                            "일정을 작성해보세요.",
+                            "homeNoScheduleTodayAdd".tr(),
                             style: TextStyle(
                                 color:
                                     isDarkTheme ? Colors.white : Colors.black),
@@ -384,24 +386,25 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: const Text("Confirm Delete"),
-                                  content: const Text(
-                                      "Are you sure you want to delete this item?"),
+                                  title: Text("commonConfirmDeleteTitle".tr()),
+                                  content: Text(
+                                      "commonConfirmDelete".tr()),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context),
                                       // Close the dialog
-                                      child: const Text("Cancel"),
+                                      child: Text("commonCancel".tr()),
                                     ),
                                     TextButton(
                                       onPressed: () {
                                         scheduleBloc.add(DeleteScheduleItem(
                                             item.id, currentDate));
+                                        FlutterBackgroundService().invoke('updateData');
                                         Navigator.pop(
                                             context); // Close the dialog
                                       },
-                                      child: const Text("Delete",
-                                          style: TextStyle(color: Colors.red)),
+                                      child: Text("commonDelete".tr(),
+                                          style: const TextStyle(color: Colors.red)),
                                     ),
                                   ],
                                 );

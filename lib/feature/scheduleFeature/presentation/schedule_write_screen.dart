@@ -1,5 +1,7 @@
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:intl/intl.dart';
 import 'package:realm/realm.dart';
 
@@ -125,6 +127,7 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
                         .add(AddScheduleItem(newItem, selectedDate));
                   }
 
+                  FlutterBackgroundService().invoke('updateData');
                   Navigator.pop(context);
                 }
               },
@@ -222,7 +225,7 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
                     controller: _contentController,
                     maxLines: null,
                     decoration: InputDecoration(
-                      hintText: 'Enter content…',
+                      hintText: 'commonWritePlaceHolder'.tr(),
                       border: const OutlineInputBorder(),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
