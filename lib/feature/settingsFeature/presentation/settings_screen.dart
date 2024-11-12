@@ -115,7 +115,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                                     },
                                   );
                                   break;
-                                case SettingsOptions.settingsMenuEditProfile:
+                                case SettingsOptions.settingsMenuSettingsProfile:
                                   Navigator.pushNamed(
                                     context,
                                     AppRouter.editProfile,

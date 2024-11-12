@@ -35,12 +35,14 @@
   "editProfileImageLoad": "Load Image",
 
   "settingsMenuAppInfo": "App Info",
-  "settingsMenuEditProfile": "Edit Profile",
+  "settingsMenuSettingsProfile": "Profile Settings",
   "settingsMenuChangeTheme": "Change Theme",
   "settingsEditProfileReset": "Reset",
   "settingsEditProfileLoadImage": "Load Image",
   "settingsChangeThemeTitle": "Shall we change the theme?",
 
   "homeWidgetEmptyTitle": "Please select D-Day.",
-  "chooseDdayTitle": "Choose D-day"
+  "chooseDdayTitle": "Choose D-day",
+
+  "initialNotificationContents": "Today's schedule and D-day."
 }

@@ -53,7 +53,7 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: widget.isDarkTheme ? Colors.black87 : Colors.white,
-        title: Text('Profile Settings',
+        title: Text('settingsMenuSettingsProfile'.tr(),
           style: TextStyle(color: widget.isDarkTheme ? Colors.white : Colors.black),
         ),
         leading: IconButton(

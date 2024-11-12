@@ -35,12 +35,14 @@
   "editProfileImageLoad": "이미지 불러오기",
 
   "settingsMenuAppInfo": "앱 정보",
-  "settingsMenuEditProfile": "프로필 변경",
+  "settingsMenuSettingsProfile": "프로필 설정",
   "settingsMenuChangeTheme": "테마 변경",
   "settingsEditProfileReset": "초기화",
   "settingsEditProfileLoadImage": "이미지 불러오기",
   "settingsChangeThemeTitle": "테마를 변경해볼까요?",
 
   "homeWidgetEmptyTitle": "디데이를 선택해주세요.",
-  "chooseDdayTitle": "디데이 선택"
+  "chooseDdayTitle": "디데이 선택",
+
+  "initialNotificationContents": "오늘의 일정과 디데이를 알려드릴게요."
 }

@@ -126,8 +126,6 @@ class ScheduleWriteScreenState extends State<ScheduleWriteScreen> {
                     widget.scheduleBloc
                         .add(AddScheduleItem(newItem, selectedDate));
                   }
-
-                  FlutterBackgroundService().invoke('updateData');
                   Navigator.pop(context);
                 }
               },

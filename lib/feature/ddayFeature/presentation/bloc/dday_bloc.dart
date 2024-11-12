@@ -1,3 +1,4 @@
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:equatable/equatable.dart';
@@ -36,6 +37,7 @@ class DdayBloc extends Bloc<DdayEvent, DdayState> {
       AddDdayItem event, Emitter<DdayState> emit) async {
     try {
       await usecase.addDdayItem(event.item);
+      FlutterBackgroundService().invoke('updateData');
       add(FetchDdayItems());
     } catch (e) {
       emit(const DdayError("Failed to add dday item"));
@@ -46,6 +48,7 @@ class DdayBloc extends Bloc<DdayEvent, DdayState> {
       UpdateDdayItem event, Emitter<DdayState> emit) async {
     try {
       await usecase.updateDdayItem(event.id, event.item);
+      FlutterBackgroundService().invoke('updateData');
       add(FetchDdayItems());
     } catch (e) {
       emit(const DdayError("Failed to update dday item"));
@@ -56,6 +59,7 @@ class DdayBloc extends Bloc<DdayEvent, DdayState> {
       DeleteDdayItem event, Emitter<DdayState> emit) async {
     try {
       await usecase.deleteDdayItem(event.id);
+      FlutterBackgroundService().invoke('updateData');
       add(FetchDdayItems());
     } catch (e) {
       emit(const DdayError("Failed to delete dday item"));

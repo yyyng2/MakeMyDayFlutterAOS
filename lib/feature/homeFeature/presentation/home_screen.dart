@@ -496,7 +496,7 @@ class OneMessageView extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                              DateFormat('yyyy-MM-dd').format(date),
+                              DateFormat('yyyy-MM-dd').format(date.toLocal()),
                           style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),),
                           const SizedBox(width: 5),
                           Text(

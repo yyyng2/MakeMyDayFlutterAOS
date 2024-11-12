@@ -17,7 +17,7 @@ class CommonRepositoryImpl implements CommonRepository {
       final installedVersion = await localDatasource.getCurrentAppVersion();
       final packageName = await localDatasource.getCurrentAppPackageName();
       final storeVersion = await remoteDatasource?.getStoreVersion(packageName);
-
+      print("installedVersion: ${installedVersion}, storeVersion: $storeVersion");
       return VersionInfoEntity(installedVersion: installedVersion, storeVersion: storeVersion).isUpdateAvailable;
     } catch (e) {
       print(e);

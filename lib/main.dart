@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -93,6 +94,19 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("addPostFrameCallback");
+      askPermission();
+    });
+  }
+
+  Future<void> askPermission() async {
+    if (await Permission.notification.request().isGranted) {
+      await initializeBackgroundService();
+    } else {
+      await Permission.notification.request();
+      print('Notification permission denied');
+    }
   }
 
   @override

@@ -1,6 +1,6 @@
 enum SettingsOptions {
   settingsMenuAppInfo,
-  settingsMenuEditProfile,
+  settingsMenuSettingsProfile,
   settingsMenuChangeTheme,
   // openSources,
 }

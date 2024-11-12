@@ -30,6 +30,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
   late ScheduleUsecase scheduleUsecase;
   late ScheduleBloc scheduleBloc;
   DateTime currentDate = DateTime.now();
+  int targetYear = DateTime.now().year;
   int targetMonth = DateTime.now().month;
   List<DateTime> dates = [];
 
@@ -56,7 +57,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   DateTime getCurrentMonthDate() {
-    return DateTime(currentDate.year, targetMonth, 1);
+    return DateTime(targetYear, targetMonth, 1);
   }
 
   List<DateTime> extractDates() {
@@ -178,6 +179,18 @@ class ScheduleScreenState extends State<ScheduleScreen> {
             children: [
               IconButton(
                 icon: Icon(
+                  Icons.keyboard_double_arrow_left,
+                  color: isDarkTheme ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    targetYear -= 1;
+                    handleMonthChange();
+                  });
+                },
+              ),
+              IconButton(
+                icon: Icon(
                   Icons.chevron_left,
                   color: isDarkTheme ? Colors.white : Colors.black,
                 ),
@@ -185,7 +198,8 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                   setState(() {
                     targetMonth -= 1;
                     if (targetMonth < 1) {
-                      targetMonth = 12; // Wrap around to December
+                      targetMonth = 12;
+                      targetYear -= 1;  // Decrement year when moving from January to December
                     }
                     handleMonthChange();
                   });
@@ -201,7 +215,20 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                     targetMonth += 1;
                     if (targetMonth > 12) {
                       targetMonth = 1;
+                      targetYear += 1;  // Increment year when moving from December to January
                     }
+                    handleMonthChange();
+                  });
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.keyboard_double_arrow_right,
+                  color: isDarkTheme ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  setState(() {
+                    targetYear += 1;
                     handleMonthChange();
                   });
                 },

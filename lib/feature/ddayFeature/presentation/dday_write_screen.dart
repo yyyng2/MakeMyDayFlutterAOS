@@ -74,7 +74,7 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
         name: 'HomeScreenWidget',
         qualifiedAndroidName: 'io.github.yyyng2.make_my_day.HomeScreenWidget',
       );
-      FlutterBackgroundService().invoke('updateData');
+
       Navigator.pop(context);
     }
   }

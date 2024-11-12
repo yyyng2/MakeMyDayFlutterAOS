@@ -1,3 +1,4 @@
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:equatable/equatable.dart';
@@ -38,6 +39,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       AddScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
       await usecase.addScheduleItem(event.item);
+      FlutterBackgroundService().invoke('updateData');
       add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to add schedule item"));
@@ -48,6 +50,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       UpdateScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
       await usecase.updateScheduleItem(event.id, event.item);
+      FlutterBackgroundService().invoke('updateData');
       add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to update schedule item"));
@@ -58,6 +61,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       DeleteScheduleItem event, Emitter<ScheduleState> emit) async {
     try {
       await usecase.deleteScheduleItem(event.id);
+      FlutterBackgroundService().invoke('updateData');
       add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to delete schedule item"));
