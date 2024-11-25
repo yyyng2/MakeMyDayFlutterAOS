@@ -36,6 +36,13 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
     _loadSavedImage();
   }
 
+  @override
+  void dispose() {
+    _image = null;
+    _nicknameController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadSavedImage() async {
     final directory = await getApplicationDocumentsDirectory();
     final path = '${directory.path}/custom_profile_image';
@@ -95,10 +102,22 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.transparent,
-                  backgroundImage: _image != null
-                      ? FileImage(_image!)
-                      : AssetImage(widget.isDarkTheme ? 'assets/images/dIcon/day_white.png' : 'assets/images/dIcon/day_color.png')
-                  as ImageProvider,
+                  child: _image != null
+                      ? ClipOval(
+                    child: Image.file(
+                      _image!,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                      : Image.asset(
+                    widget.isDarkTheme
+                        ? 'assets/images/dIcon/day_white.png'
+                        : 'assets/images/dIcon/day_color.png',
+                    width: 100,
+                    height: 100,
+                  ),
                 ),
                 const SizedBox(height: 16),
             Padding(
@@ -157,31 +176,70 @@ class SettingsEditProfileScreenState extends State<SettingsEditProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
-    if (_nicknameController.text.isNotEmpty) {
-      final String nickname = _nicknameController.text;
-      widget.settingsBloc.add(SetNickname(nickname));
-    }
+    try {
+      // 1. 먼저 닉네임 저장
+      if (_nicknameController.text.isNotEmpty) {
+        final String nickname = _nicknameController.text;
+        widget.settingsBloc.add(SetNickname(nickname));
+      }
+      print("processing:1");
+      // 2. 이미지 처리
+      if (_image != null) {
+        final directory = await getApplicationDocumentsDirectory();
+        final path = '${directory.path}/custom_profile_image';
 
-    final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/custom_profile_image';
-    final existingImage = File(path);
+        // 2.1 기존 파일 삭제 전에 존재 여부 확인
+        final existingFile = File(path);
+        if (await existingFile.exists()) {
+          await existingFile.delete();
+        }
+        print("processing:2");
 
-    if (_image != null) {
-      PaintingBinding.instance.imageCache.clear();
-      PaintingBinding.instance.imageCache.clearLiveImages();
-      await _image!.copy(path);
-    } else {
-      if (await existingImage.exists()) {
-        await existingImage.delete();
+        // 2.2 새 이미지 복사 전에 원본 파일 존재 여부 확인
+        if (await _image!.exists()) {
+          // 2.3 복사 작업을 try-catch로 감싸기
+          try {
+            await _image!.copy(path);
+            print("processing:2.5");
+          } catch (e) {
+            debugPrint('Image copy failed: $e');
+            // 에러 발생시 이미지 저장 실패 메시지만 표시하고 계속 진행
+          }
+        }
+
+        print("processing:3");
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final path = '${directory.path}/custom_profile_image';
+
+        final existingFile = File(path);
+        if (await existingFile.exists()) {
+          await existingFile.delete();
+        }
+      }
+
+      // 3. 모든 작업이 완료된 후에만 UI 업데이트
+      if (mounted) {
+        // 3.1 상태 업데이트 전에 약간의 지연 추가
+        await Future.delayed(const Duration(milliseconds: 100));
+        print("processing:4");
+        setState(() {});
+        print("processing:5");
+        Navigator.of(context).pop();
+        print("processing:6");
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('editProfileSaveError'.tr())),
+        );
       }
     }
-
-    Navigator.pop(context);
   }
 
   void _resetProfile() {
     setState(() {
-      _nicknameController.clear();
+      _nicknameController.text = "D";
       _image = null;
     });
   }

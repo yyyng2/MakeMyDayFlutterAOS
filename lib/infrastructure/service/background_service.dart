@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:realm/realm.dart';
 import '../../feature/scheduleFeature/domain/entities/schedule_entity.dart';
 import '../../feature/ddayFeature/domain/entities/dday_entity.dart';
+import '../manager/realm_schema_version_manager.dart';
 
 Future<void> initializeBackgroundService() async {
   final service = FlutterBackgroundService();
@@ -95,7 +96,7 @@ void onStart(ServiceInstance service) async {
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  final config = Configuration.local([ScheduleEntity.schema, DdayEntity.schema]);
+  final config = RealmSchemaVersionManager.getConfig();
   final realm = Realm(config);
 
   List<ScheduleEntity> todaySchedules = [];
@@ -219,12 +220,80 @@ Future<void> _updateNotifications(
   // 디데이 알림 처리
   if (ddays.isNotEmpty) {
     final timeFormat = DateFormat('yyyy-MM-dd', Intl.systemLocale);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
     for (int i = 0; i < ddays.length; i++) {
       final d = ddays[i];
       final localTime = d.date.toLocal();
-      final formattedTime = timeFormat.format(localTime);
-      final now = DateTime.now();
-      var differenceInDays = d.date.difference(DateTime(now.year, now.month, now.day)).inDays;
+      var formattedTime = timeFormat.format(localTime);
+      String anniversaryYear = '';
+
+      var differenceInDays;
+
+      if (d.repeatAnniversary) {
+        // 올해의 같은 날짜로 설정
+        var thisYearDate = DateTime(
+          now.year,
+          localTime.month,
+          localTime.day,
+        );
+
+        // 만약 올해의 날짜가 이미 지났다면 내년으로 설정
+        if (thisYearDate.isBefore(today)) {
+          thisYearDate = DateTime(
+            now.year + 1,
+            localTime.month,
+            localTime.day,
+          );
+          formattedTime = timeFormat.format(thisYearDate);
+        }
+
+        differenceInDays = thisYearDate.difference(today).inDays;
+
+        // 기념일 년수 계산
+        var years = now.year - localTime.year;
+        if (thisYearDate.year > now.year) {
+          years += 1; // 내년이면 1년 추가
+        }
+        if (years > 0) {
+          String suffix;
+          if (years % 10 == 1 && years != 11) {
+            suffix = 'st';
+          } else if (years % 10 == 2 && years != 12) {
+            suffix = 'nd';
+          } else if (years % 10 == 3 && years != 13) {
+            suffix = 'rd';
+          } else {
+            suffix = 'th';
+          }
+          anniversaryYear = ' ($years$suffix)';
+        }
+
+        // notificationType에 따른 처리
+        switch (d.notificationType) {
+          case 1: // 한달 전
+            if (differenceInDays > 30) {
+              continue;
+            }
+            break;
+          case 2: // 일주일 전
+            if (differenceInDays > 7) {
+              continue;
+            }
+            break;
+          case 3: // 하루 전
+            if (differenceInDays > 1) {
+              continue;
+            }
+            break;
+          case 0: // 항상
+          default:
+            break;
+        }
+      } else {
+        differenceInDays = d.date.difference(today).inDays;
+      }
 
       if (d.dayPlus) {
         differenceInDays = differenceInDays - 1;
@@ -252,7 +321,7 @@ Future<void> _updateNotifications(
                 ongoing: true,
                 playSound: false,
                 channelShowBadge: false,
-                styleInformation: BigTextStyleInformation("$ddayText \n$formattedTime")
+                styleInformation: BigTextStyleInformation("$ddayText \n$formattedTime $anniversaryYear")
             )
         ),
       );

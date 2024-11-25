@@ -37,6 +37,11 @@ class CommonRepositoryImpl implements CommonRepository {
   }
 
   @override
+  Future<String> getCurrentVersion() async {
+    return await localDatasource.getCurrentAppVersion();
+  }
+
+  @override
   Future<bool> getTheme() async {
     final result = await localDatasource.getThemeFromSharedPreferences() ?? false ;
     return result;

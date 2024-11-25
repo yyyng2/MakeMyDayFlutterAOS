@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:realm/realm.dart';
+import '../../../infrastructure/manager/realm_schema_version_manager.dart';
 import '../../ddayFeature/domain/entities/dday_entity.dart';
 import '../../../infrastructure/manager/widget_manager.dart';
 import 'package:home_widget/home_widget.dart';
@@ -27,7 +28,7 @@ class _DdaySelectionScreenState extends State<DdaySelectionScreen> {
   }
 
   void _initRealm() {
-    final config = Configuration.local([DdayEntity.schema]);
+    final config = RealmSchemaVersionManager.getConfig();
     _realm = Realm(config);
   }
 
@@ -50,7 +51,7 @@ class _DdaySelectionScreenState extends State<DdaySelectionScreen> {
           final dday = _ddayList[index];
           return ListTile(
             title: Text(dday.title),
-            subtitle: Text(dday.date.toString()),
+            subtitle: Text(DateFormat('yyyy-MM-dd').format(dday.date.toLocal())),
             onTap: () => _selectDday(dday),
           );
         },

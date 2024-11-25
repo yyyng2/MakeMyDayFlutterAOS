@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -108,7 +109,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                                     context,
                                     AppRouter.appInfo,
                                     arguments: {
-                                      'currentVersion': '1.0.0',
+                                      'currentVersion': state.currentVersion,
                                       'settingsBloc': settingsBloc,
                                       'existUpdate': state.existUpdate,
                                       'isDarkTheme': state.isDarkTheme,
@@ -139,6 +140,10 @@ class SettingsScreenState extends State<SettingsScreen> {
                                   break;
                                 // case SettingsOptions.openSources:
                                 //  break;
+                                case SettingsOptions.settingsMenuNotificationSettings:
+                                  AppSettings.openAppSettings(
+                                    type: AppSettingsType.notification,
+                                  );
                               }
                             },
                           ),

@@ -1,6 +1,7 @@
 {
   "commonConfirm": "확인",
   "commonCancel": "취소",
+  "commonLater": "나중에",
   "commonConfirmDeleteTitle": "삭제 확인",
   "commonConfirmDelete": "삭제하시겠습니까?",
   "commonDelete": "삭제",
@@ -25,6 +26,12 @@
 
   "scheduleEmpty": "일정이 없어요.",
 
+  "ddayRepeatAnniversary": "기념일 반복",
+  "ddayNotificationType": "알림 표시 타입",
+  "always": "항상",
+  "monthBefore": "한달 전",
+  "weekBefore": "일주일 전",
+  "dayBefore": "하루 전",
   "ddayWritePlusDay": "오늘 기준 1일",
 
   "appInfoEmailTitle": "[MMDApp] 문의",
@@ -40,6 +47,7 @@
   "settingsEditProfileReset": "초기화",
   "settingsEditProfileLoadImage": "이미지 불러오기",
   "settingsChangeThemeTitle": "테마를 변경해볼까요?",
+  "settingsMenuNotificationSettings": "알림 재설정",
 
   "homeWidgetEmptyTitle": "디데이를 선택해주세요.",
   "chooseDdayTitle": "디데이 선택",

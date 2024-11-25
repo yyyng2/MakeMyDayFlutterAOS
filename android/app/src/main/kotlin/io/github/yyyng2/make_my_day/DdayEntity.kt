@@ -12,4 +12,6 @@ class DdayEntity : RealmObject {
     var title: String = ""
     var date: RealmInstant = RealmInstant.from(0, 0)
     var dayPlus: Boolean = false
+    var repeatAnniversary: Boolean = false
+    var notificationType: Int = 0
 }

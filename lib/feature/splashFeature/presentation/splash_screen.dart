@@ -84,6 +84,13 @@ class SplashScreenState extends State<SplashScreen> {
           content: const Text('updateRequiredContents').tr(),
           actions: [
             TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('commonLater',
+              style: TextStyle(color: Colors.red),).tr(),
+            ),
+            TextButton(
               onPressed: () async {
                 _splashBloc.add(GoToStoreEvent());
               },
@@ -92,7 +99,10 @@ class SplashScreenState extends State<SplashScreen> {
           ],
         );
       },
-    );
+    ).then((_) {
+      // 다이얼로그가 어떤 방식으로든 닫힐 때 호출됨
+      _navigateToMainScreen();
+    });
   }
 
   void _navigateToMainScreen() {

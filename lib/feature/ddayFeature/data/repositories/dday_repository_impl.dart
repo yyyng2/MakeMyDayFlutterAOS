@@ -37,6 +37,8 @@ class DdayRepositoryImpl implements DdayRepository {
       database.write(() {
         existingItem.title = item.title;
         existingItem.date = item.date;
+        existingItem.repeatAnniversary = item.repeatAnniversary;
+        existingItem.notificationType = item.notificationType;
         existingItem.dayPlus = item.dayPlus;
       });
     }

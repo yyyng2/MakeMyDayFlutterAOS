@@ -13,6 +13,10 @@ class CommonUsecase {
     await repository.openPlayStore();
   }
 
+  Future<String> getCurrentVersion() async {
+    return await repository.getCurrentVersion();
+  }
+
   Future<bool> getTheme() async {
     return await repository.getTheme();
   }

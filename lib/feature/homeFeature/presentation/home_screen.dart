@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:make_my_day/infrastructure/manager/realm_schema_version_manager.dart';
 import 'package:realm/realm.dart';
 
 import '../../commonFeature/data/datasources/common_local_datasource.dart';
@@ -58,8 +59,7 @@ class HomeScreenState extends State<HomeScreen> {
     );
     commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
     homeLocalDatasource = HomeLocalDatasource(CommonLocalDatasource());
-    final config =
-        Configuration.local([DdayEntity.schema, ScheduleEntity.schema]);
+    final config = RealmSchemaVersionManager.getConfig();
     realm = Realm(config);
     homeRepositoryImpl = HomeRepositoryImpl(datasource: homeLocalDatasource);
     ddayRepositoryImpl = DdayRepositoryImpl(realm);
@@ -156,6 +156,7 @@ class HomeScreenState extends State<HomeScreen> {
                                   plusDay: false,
                                   titleMessage: "homeScheduleToday".tr(),
                                   date: DateTime.now(),
+                                  repeatAnniversary: false,
                                 ),
                                 for (var item in state.homeItems.scheduleItems)
                                   InkWell(
@@ -181,6 +182,7 @@ class HomeScreenState extends State<HomeScreen> {
                                       plusDay: false,
                                       titleMessage: item.title,
                                       date: item.date,
+                                      repeatAnniversary: false,
                                     ),
                                   ),
                               ],
@@ -203,6 +205,7 @@ class HomeScreenState extends State<HomeScreen> {
                                   plusDay: false,
                                   titleMessage: "homeDdayToday".tr(),
                                   date: DateTime.now(),
+                                  repeatAnniversary: false,
                                 ),
                                 if (state.homeItems.ddayItems.isNotEmpty)
                                   for (var item in state.homeItems.ddayItems)
@@ -229,6 +232,7 @@ class HomeScreenState extends State<HomeScreen> {
                                         plusDay: item.dayPlus,
                                         titleMessage: item.title,
                                         date: item.date,
+                                        repeatAnniversary: item.repeatAnniversary,
                                       ),
                                     ),
                               ],
@@ -279,7 +283,7 @@ class HomeScreenState extends State<HomeScreen> {
                               arguments: {
                                 'isEdit': false,
                                 'ddayObject': DdayEntity(
-                                    ObjectId(), '', DateTime.now(), true),
+                                    ObjectId(), '', DateTime.now(), false, 0, true),
                                 'ddayBloc': ddayBloc,
                                 'isDarkTheme': (homeBloc.state is HomeLoaded) ? (homeBloc.state as HomeLoaded).isDarkTheme : false,
                               });
@@ -393,6 +397,7 @@ class OneMessageView extends StatelessWidget {
   final bool plusDay;
   final String titleMessage;
   final DateTime date;
+  final bool repeatAnniversary;
 
   const OneMessageView({
     required this.isDarkTheme,
@@ -404,15 +409,63 @@ class OneMessageView extends StatelessWidget {
     required this.plusDay,
     required this.titleMessage,
     required this.date,
+    required this.repeatAnniversary,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    var differenceInDays;
+    final localTime = date.toLocal();
+    String formattedDate = DateFormat('yyyy-MM-dd').format(date.toLocal());
+    String anniversaryYear = '';
 
-    var differenceInDays =
-        date.difference(DateTime(now.year, now.month, now.day)).inDays;
+    if (repeatAnniversary) {
+      // 기념일 날짜 계산
+      var thisYearDate = DateTime(
+        now.year,
+        localTime.month,
+        localTime.day,
+      );
+
+      // 만약 올해의 날짜가 이미 지났다면 내년으로 설정
+      if (thisYearDate.isBefore(today)) {
+        thisYearDate = DateTime(
+          now.year + 1,
+          localTime.month,
+          localTime.day,
+        );
+        formattedDate = DateFormat('yyyy-MM-dd').format(thisYearDate);
+      }
+
+      differenceInDays = thisYearDate.difference(today).inDays;
+
+      // 기념일 년수 계산
+      var years = now.year - localTime.year;
+      if (thisYearDate.year > now.year) {
+        years += 1;
+      }
+      if (years > 0) {
+        String suffix;
+        if (years % 10 == 1 && years != 11) {
+          suffix = 'st';
+        } else if (years % 10 == 2 && years != 12) {
+          suffix = 'nd';
+        } else if (years % 10 == 3 && years != 13) {
+          suffix = 'rd';
+        } else {
+          suffix = 'th';
+        }
+        anniversaryYear = ' ($years$suffix)';
+      }
+    } else {
+      differenceInDays = localTime.difference(today).inDays;
+      formattedDate = showDday
+          ? DateFormat('yyyy-MM-dd').format(date.toLocal())
+          : DateFormat('a hh:mm').format(date.toLocal());
+    }
 
     if (plusDay) {
       differenceInDays = differenceInDays - 1;
@@ -496,9 +549,9 @@ class OneMessageView extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                              DateFormat('yyyy-MM-dd').format(date.toLocal()),
+                                formattedDate + anniversaryYear,
                           style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black),),
-                          const SizedBox(width: 5),
+                          const SizedBox(width: 16),
                           Text(
                             ddayText,
                             style: const TextStyle(color: Colors.green),

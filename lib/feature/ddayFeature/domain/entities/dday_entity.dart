@@ -9,5 +9,9 @@ class _DdayEntity {
 
   late String title;
   late DateTime date;
+  //-----schema 2
+  late bool repeatAnniversary;
+  late int notificationType;
+  //schema 2-----
   late bool dayPlus;
 }

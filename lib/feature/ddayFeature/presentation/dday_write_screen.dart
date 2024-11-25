@@ -1,13 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart';
-import 'package:make_my_day/infrastructure/manager/widget_manager.dart';
 import 'package:realm/realm.dart';
 
 import '../domain/entities/dday_entity.dart';
 import '../presentation/bloc/dday_bloc.dart';
+import 'enums/notification_type.dart';
 
 class DdayWriteScreen extends StatefulWidget {
   final bool isEdit;
@@ -17,10 +16,10 @@ class DdayWriteScreen extends StatefulWidget {
 
   const DdayWriteScreen(
       {super.key,
-      required this.isEdit,
-      required this.ddayEntity,
-      required this.ddayBloc,
-      required this.isDarkTheme});
+        required this.isEdit,
+        required this.ddayEntity,
+        required this.ddayBloc,
+        required this.isDarkTheme});
 
   @override
   DdayWriteScreenState createState() => DdayWriteScreenState();
@@ -29,16 +28,19 @@ class DdayWriteScreen extends StatefulWidget {
 class DdayWriteScreenState extends State<DdayWriteScreen> {
   final TextEditingController _contentController = TextEditingController();
   late DateTime selectedDate;
+  bool repeatAnniversary = false;
+  late NotificationType notificationType;
   bool dayPlus = false;
 
   @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(microseconds: 100));
-    print('ddayEntity: ${widget.ddayEntity}');
-
     selectedDate = widget.ddayEntity?.date.toLocal() ?? DateTime.now();
     _contentController.text = (widget.ddayEntity?.title ?? '');
+    print(widget.ddayEntity?.repeatAnniversary);
+    repeatAnniversary = widget.ddayEntity?.repeatAnniversary ?? false;
+    notificationType = NotificationTypeExtension.fromInt(widget.ddayEntity?.notificationType ?? 0);
     dayPlus = widget.ddayEntity?.dayPlus ?? false;
   }
 
@@ -54,12 +56,18 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
     } else {
       final title = _contentController.text;
 
+      var intNotificationType = notificationType.toInt();
+
       final newItem = DdayEntity(
         widget.ddayEntity?.id ?? ObjectId(),
         title,
         selectedDate,
-        dayPlus,
+        repeatAnniversary,
+        repeatAnniversary ? intNotificationType: 0,
+        repeatAnniversary ? false : dayPlus,
       );
+      print("Just before update - repeatAnniversary: $repeatAnniversary, intNotification: $intNotificationType");
+      print("before save - repeatAnniversary: ${newItem.repeatAnniversary}, intNotificationType: ${newItem.notificationType}");
 
       if (widget.isEdit) {
         final ddayId = widget.ddayEntity?.id ?? ObjectId();
@@ -68,6 +76,9 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
       } else {
         widget.ddayBloc.add(AddDdayItem(newItem));
       }
+
+      final savedItem = await widget.ddayBloc.usecase.repository.fetchDdayItems();
+      print("Saved DdayEntity - repeatAnniversary: ${savedItem.first.repeatAnniversary}, notificationType: ${savedItem.first.notificationType}");
 
       await HomeWidget.saveWidgetData<String>('force_update', DateTime.now().toString());
       await HomeWidget.updateWidget(
@@ -165,22 +176,77 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
                                 : Colors.black),
                       ),
                     )),
+                // Anniversary Radio Button
                 SwitchListTile(
                   activeColor: Colors.blueAccent,
                   title: Text(
-                    "ddayWritePlusDay".tr(),
+                    "ddayRepeatAnniversary".tr(),
                     style: TextStyle(
-                        color:
-                            widget.isDarkTheme ? Colors.white : Colors.black),
+                        color: widget.isDarkTheme ? Colors.white : Colors.black),
                   ),
-                  value: dayPlus,
-                  onChanged: (bool value) {
+                  value: repeatAnniversary,
+                  onChanged: (bool? value) {
                     setState(() {
-                      dayPlus = value;
+                      repeatAnniversary = value ?? false;
                     });
                   },
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 8),
                 ),
+                // Show either Day Plus switch or Notification Type dropdown based on anniversary selection
+                if (!repeatAnniversary)
+                  SwitchListTile(
+                    activeColor: Colors.blueAccent,
+                    title: Text(
+                      "ddayWritePlusDay".tr(),
+                      style: TextStyle(
+                          color: widget.isDarkTheme ? Colors.white : Colors.black),
+                    ),
+                    value: dayPlus,
+                    onChanged: (bool value) {
+                      setState(() {
+                        dayPlus = value;
+                      });
+                    },
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          "ddayNotificationType".tr(),
+                          style: TextStyle(
+                            color: widget.isDarkTheme ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(width: 100),
+                        Expanded(
+                          child: DropdownButton<NotificationType>(
+                            value: notificationType,
+                            isExpanded: true,
+                            dropdownColor: widget.isDarkTheme ? Colors.black87 : Colors.white,
+                            style: TextStyle(
+                              color: widget.isDarkTheme ? Colors.white : Colors.black,
+                            ),
+                            items: NotificationType.values.map((NotificationType type) {
+                              return DropdownMenuItem<NotificationType>(
+                                value: type,
+                                child: Text(type.name.tr()),
+                              );
+                            }).toList(),
+                            onChanged: (NotificationType? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  notificationType = newValue;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 TextField(
                     controller: _contentController,
@@ -191,21 +257,21 @@ class DdayWriteScreenState extends State<DdayWriteScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color:
-                              widget.isDarkTheme ? Colors.white : Colors.black,
+                          widget.isDarkTheme ? Colors.white : Colors.black,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color:
-                              widget.isDarkTheme ? Colors.blue : Colors.black,
+                          widget.isDarkTheme ? Colors.blue : Colors.black,
                         ),
                       ),
                     ),
                     cursorColor:
-                        widget.isDarkTheme ? Colors.blue : Colors.black,
+                    widget.isDarkTheme ? Colors.blue : Colors.black,
                     style: TextStyle(
                         color:
-                            widget.isDarkTheme ? Colors.white : Colors.black)),
+                        widget.isDarkTheme ? Colors.white : Colors.black)),
               ],
             ),
           ),

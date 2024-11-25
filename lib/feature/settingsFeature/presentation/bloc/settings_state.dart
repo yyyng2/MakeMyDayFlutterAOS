@@ -15,16 +15,18 @@ class SettingsLoaded extends SettingsState {
   final String nickname;
   final bool existUpdate;
   final bool isDarkTheme;
+  final String currentVersion;
 
   @override
   const SettingsLoaded({
     required this.nickname,
     required this.existUpdate,
     required this.isDarkTheme,
+    required this.currentVersion
   });
 
   @override
-  List<Object?> get props => [nickname, existUpdate, isDarkTheme];
+  List<Object?> get props => [nickname, existUpdate, isDarkTheme, currentVersion];
 }
 
 class SettingsError extends SettingsState {

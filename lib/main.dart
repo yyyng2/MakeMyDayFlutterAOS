@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:make_my_day/infrastructure/manager/realm_schema_version_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:realm/realm.dart';
 
@@ -24,7 +25,7 @@ Future<void> main() async {
   await EasyLocalization.ensureInitialized();
   await MobileAds.instance.initialize();
 
-  final config = Configuration.local([ScheduleEntity.schema, DdayEntity.schema]);
+  final config = RealmSchemaVersionManager.getConfig();
   final realm = Realm(config);
 
   runApp(
@@ -39,44 +40,6 @@ Future<void> main() async {
       )
   );
 }
-
-// class MyApp extends StatelessWidget {
-//   final Realm realm;
-//   final FlutterLocalNotificationsPlugin notificationsPlugin;
-//
-//   const MyApp({super.key, required this.realm, required this.notificationsPlugin});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final uri = Uri.parse(WidgetsBinding.instance.window.defaultRouteName);
-//     print('uri: $uri');
-//     if (uri.toString().contains('MakeMyDayAppWidget')) {
-//       final widgetId = uri.pathSegments.last;
-//       return MaterialApp(
-//         localizationsDelegates: context.localizationDelegates,
-//         supportedLocales: context.supportedLocales,
-//         locale: context.locale,
-//         debugShowCheckedModeBanner: false,
-//         onGenerateRoute: (settings) {
-//           return AppRouter.generateRoute(RouteSettings(
-//             name: AppRouter.ddaySelection,
-//             arguments: {'widgetId': widgetId},
-//           ));
-//         },
-//         initialRoute: AppRouter.ddaySelection,
-//       );
-//     } else {
-//       return MaterialApp(
-//         localizationsDelegates: context.localizationDelegates,
-//         supportedLocales: context.supportedLocales,
-//         locale: context.locale,
-//         debugShowCheckedModeBanner: false,
-//         onGenerateRoute: AppRouter.generateRoute,
-//         initialRoute: AppRouter.splash,
-//       );
-//     }
-//   }
-// }
 
 class MyApp extends StatefulWidget {
   final Realm realm;

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:realm/realm.dart';
 import 'package:intl/intl.dart';
 
+import '../../../infrastructure/manager/realm_schema_version_manager.dart';
 import '../../commonFeature/data/datasources/common_local_datasource.dart';
 import '../../commonFeature/data/repositories/common_repository_impl.dart';
 import '../../commonFeature/domain/usecases/common_usecase.dart';
@@ -40,7 +41,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     commonRepositoryImpl = CommonRepositoryImpl(
         localDatasource: commonLocalDatasource, remoteDatasource: null);
     commonUsecase = CommonUsecase(repository: commonRepositoryImpl);
-    final config = Configuration.local([ScheduleEntity.schema]);
+    final config = RealmSchemaVersionManager.getConfig();
     realm = Realm(config);
     scheduleRepositoryImpl = ScheduleRepositoryImpl(realm);
     scheduleUsecase = ScheduleUsecase(repository: scheduleRepositoryImpl);
@@ -166,7 +167,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     final monthYear = DateFormat('MMMM yyyy').format(getCurrentMonthDate());
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

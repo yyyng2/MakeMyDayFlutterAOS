@@ -28,10 +28,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       final nickname = await usecase.fetchNickname();
       final existUpdate = await commonUsecase.checkUpdate() ?? false;
       final isDarkTheme = await usecase.getTheme();
+      final currentVersion = await commonUsecase.getCurrentVersion();
       emit(SettingsLoaded(
           nickname: nickname,
           existUpdate: existUpdate,
           isDarkTheme: isDarkTheme ?? false,
+        currentVersion: currentVersion
       ));
     } catch (e) {
       emit(const SettingsError(message: "Failed to load settings items"));
@@ -46,10 +48,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       final nickname = await usecase.fetchNickname();
       final existUpdate = await commonUsecase.checkUpdate() ?? false;
       final isDarkTheme = await usecase.getTheme();
+      final currentVersion = await commonUsecase.getCurrentVersion();
       emit(SettingsLoaded(
           nickname: nickname,
           existUpdate: existUpdate,
           isDarkTheme: isDarkTheme ?? false,
+        currentVersion: currentVersion
       ));
     } catch (e) {
       emit(const SettingsError(message: "Failed to load settings items"));
@@ -62,11 +66,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final currentState = state as SettingsLoaded;
         final newTheme = event.isDarkTheme;
         await usecase.setTheme(newTheme);
+        final currentVersion = await commonUsecase.getCurrentVersion();
         emit(
           SettingsLoaded(
             nickname: currentState.nickname,
             existUpdate: currentState.existUpdate,
             isDarkTheme: newTheme,
+            currentVersion: currentVersion
           ),
         );
       }
@@ -81,12 +87,14 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       final existUpdate = await commonUsecase.checkUpdate() ?? false;
       final newTheme = isDarkTheme;
       await usecase.setTheme(newTheme);
+      final currentVersion = await commonUsecase.getCurrentVersion();
       mainTabBloc.add(LoadThemeEvent());
       emit(
         SettingsLoaded(
           nickname: nickname,
           existUpdate: existUpdate,
           isDarkTheme: newTheme,
+          currentVersion: currentVersion
         ),
       );
     } catch (e) {

@@ -3,4 +3,5 @@ enum SettingsOptions {
   settingsMenuSettingsProfile,
   settingsMenuChangeTheme,
   // openSources,
+  settingsMenuNotificationSettings
 }

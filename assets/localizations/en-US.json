@@ -1,6 +1,7 @@
 {
   "commonConfirm": "Confirm",
   "commonCancel": "Cancel",
+  "commonLater": "Later",
   "commonConfirmDeleteTitle": "Confirm Delete",
   "commonConfirmDelete": "Do you want to delete it?",
   "commonDelete": "Delete",
@@ -25,6 +26,12 @@
 
   "scheduleEmpty": "There is no schedule.",
 
+  "ddayRepeatAnniversary": "Repeat Anniversary",
+  "ddayNotificationType": "Show Notification Type",
+  "always": "Always",
+  "monthBefore": "Month Before",
+  "weekBefore": "Week Before",
+  "dayBefore": "Day Before",
   "ddayWritePlusDay": "1 day from today",
 
   "appInfoEmailTitle": "[MMDApp] ",
@@ -40,6 +47,7 @@
   "settingsEditProfileReset": "Reset",
   "settingsEditProfileLoadImage": "Load Image",
   "settingsChangeThemeTitle": "Shall we change the theme?",
+  "settingsMenuNotificationSettings": "Notifications Settings",
 
   "homeWidgetEmptyTitle": "Please select D-Day.",
   "chooseDdayTitle": "Choose D-day",
