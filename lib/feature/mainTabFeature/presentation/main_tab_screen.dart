@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../commonFeature/data/datasources/common_local_datasource.dart';
 import '../../commonFeature/data/repositories/common_repository_impl.dart';
@@ -27,6 +29,7 @@ class MainTabScreenState extends State<MainTabScreen> {
   NativeAd? _nativeAd;
   BannerAd? _bannerAd;
   bool isAdLoaded = false;
+  DateTime? backPressedTime;
 
   late MainTabBloc mainTabBloc;
   final CommonLocalDatasource commonLocalDatasource = CommonLocalDatasource();
@@ -155,6 +158,15 @@ class MainTabScreenState extends State<MainTabScreen> {
     );
   }
 
+  void showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -171,134 +183,150 @@ class MainTabScreenState extends State<MainTabScreen> {
           builder: (context, state) {
             final isDarkTheme =
                 state is MainTabLoaded ? state.isDarkTheme : false;
-            return Scaffold(
-              backgroundColor: isDarkTheme ? Colors.black : Colors.white,
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    if (isAdLoaded)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: SizedBox(
-                          height: 62,
-                          child: AdWidget(ad: _bannerAd!),
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, result) async {
+                if (!didPop) {
+                  DateTime nowTime = DateTime.now();
+                  if (backPressedTime == null ||
+                      nowTime.difference(backPressedTime!) > const Duration(seconds: 2)) {
+                    backPressedTime = nowTime;
+                    showSnackbar('backButtonAlert'.tr());
+                  } else {
+                    SystemNavigator.pop();
+                  }
+                }
+              },
+              child: Scaffold(
+                backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      if (isAdLoaded)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 5),
+                          child: SizedBox(
+                            height: 62,
+                            child: AdWidget(ad: _bannerAd!),
+                          ),
+                        ),
+                      Expanded(
+                        child: IndexedStack(
+                          index: _selectedIndex,
+                          children: [
+                            HomeScreen(key: _homeScreenKey),
+                            ScheduleScreen(
+                              key: _scheduleScreenKey,
+                            ),
+                            DdayScreen(
+                              key: _ddayScreenKey,
+                            ),
+                            SettingsScreen(
+                              mainTabBloc: mainTabBloc,
+                            ),
+                          ],
                         ),
                       ),
-                    Expanded(
-                      child: IndexedStack(
-                        index: _selectedIndex,
-                        children: [
-                          HomeScreen(key: _homeScreenKey),
-                          ScheduleScreen(
-                            key: _scheduleScreenKey,
-                          ),
-                          DdayScreen(
-                            key: _ddayScreenKey,
-                          ),
-                          SettingsScreen(
-                            mainTabBloc: mainTabBloc,
-                          ),
-                        ],
+                    ],
+                  ),
+                ),
+                bottomNavigationBar: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.25),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: const Offset(0, -3),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              bottomNavigationBar: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.25),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, -3),
-                    ),
-                  ],
-                ),
-                child: BottomNavigationBar(
-                  backgroundColor: isDarkTheme ? Colors.black : Colors.white,
-                  type: BottomNavigationBarType.fixed,
-                  currentIndex: _selectedIndex,
-                  onTap: (index) {
-                    setState(() {
-                      PaintingBinding.instance.imageCache.clear();
-                      PaintingBinding.instance.imageCache.clearLiveImages();
-                      _selectedIndex = index;
+                    ],
+                  ),
+                  child: BottomNavigationBar(
+                    backgroundColor: isDarkTheme ? Colors.black : Colors.white,
+                    type: BottomNavigationBarType.fixed,
+                    currentIndex: _selectedIndex,
+                    onTap: (index) {
+                      setState(() {
+                        PaintingBinding.instance.imageCache.clear();
+                        PaintingBinding.instance.imageCache.clearLiveImages();
+                        _selectedIndex = index;
 
-                      if (index == 0) {
-                        _homeScreenKey.currentState?.homeBloc
-                            .add(FetchHomeItems(DateTime.now()));
-                      } else if (index == 1) {
-                        _scheduleScreenKey.currentState?.scheduleBloc
-                            .add(FetchScheduleItemsByDate(DateTime.now()));
-                      } else if (index == 2) {
-                        _ddayScreenKey.currentState?.ddayBloc
-                            .add(FetchDdayItems());
-                      }
-                    });
-                  },
-                  selectedItemColor: isDarkTheme ? Colors.white : Colors.black,
-                  unselectedItemColor: Colors.grey,
-                  selectedLabelStyle: TextStyle(
-                      color: isDarkTheme ? Colors.black : Colors.white,
-                      fontWeight: FontWeight.bold),
-                  unselectedLabelStyle: TextStyle(
-                      color: isDarkTheme ? Colors.black : Colors.white,
-                      fontWeight: FontWeight.normal),
-                  items: [
-                    _buildBottomNavigationBarItem(
-                      isDarkTheme: isDarkTheme,
-                      label: 'Home',
-                      unselectedIconPath:
-                          'assets/images/tabbar/homeTab/home_black.png',
-                      unselectedIconPathDarkMode:
-                          'assets/images/tabbar/homeTab/home_white.png',
-                      selectedIconPath:
-                          'assets/images/tabbar/homeTab/home_black_fill.png',
-                      selectedIconPathDarkMode:
-                          'assets/images/tabbar/homeTab/home_white_fill.png',
-                      index: 0,
-                    ),
-                    _buildBottomNavigationBarItem(
-                      isDarkTheme: isDarkTheme,
-                      label: 'Schedule',
-                      unselectedIconPath:
-                          'assets/images/tabbar/scheduleTab/schedule_black.png',
-                      unselectedIconPathDarkMode:
-                          'assets/images/tabbar/scheduleTab/schedule_white.png',
-                      selectedIconPath:
-                          'assets/images/tabbar/scheduleTab/schedule_black_fill.png',
-                      selectedIconPathDarkMode:
-                          'assets/images/tabbar/scheduleTab/schedule_white_fill.png',
-                      index: 1,
-                    ),
-                    _buildBottomNavigationBarItem(
-                      isDarkTheme: isDarkTheme,
-                      label: 'D-day',
-                      unselectedIconPath:
-                          'assets/images/tabbar/dDayTab/dday_black.png',
-                      unselectedIconPathDarkMode:
-                          'assets/images/tabbar/dDayTab/dday_white.png',
-                      selectedIconPath:
-                          'assets/images/tabbar/dDayTab/dday_black_fill.png',
-                      selectedIconPathDarkMode:
-                          'assets/images/tabbar/dDayTab/dday_white_fill.png',
-                      index: 2,
-                    ),
-                    _buildBottomNavigationBarItem(
-                      isDarkTheme: isDarkTheme,
-                      label: 'Settings',
-                      unselectedIconPath:
-                          'assets/images/tabbar/settingsTab/setting_black.png',
-                      unselectedIconPathDarkMode:
-                          'assets/images/tabbar/settingsTab/setting_white.png',
-                      selectedIconPath:
-                          'assets/images/tabbar/settingsTab/setting_black_fill.png',
-                      selectedIconPathDarkMode:
-                          'assets/images/tabbar/settingsTab/setting_white_fill.png',
-                      index: 3,
-                    ),
-                  ],
+                        if (index == 0) {
+                          _homeScreenKey.currentState?.homeBloc
+                              .add(FetchHomeItems(DateTime.now()));
+                        } else if (index == 1) {
+                          _scheduleScreenKey.currentState?.scheduleBloc
+                              .add(FetchScheduleItemsByDate(DateTime.now()));
+                        } else if (index == 2) {
+                          _ddayScreenKey.currentState?.ddayBloc
+                              .add(FetchDdayItems());
+                        }
+                      });
+                    },
+                    selectedItemColor:
+                        isDarkTheme ? Colors.white : Colors.black,
+                    unselectedItemColor: Colors.grey,
+                    selectedLabelStyle: TextStyle(
+                        color: isDarkTheme ? Colors.black : Colors.white,
+                        fontWeight: FontWeight.bold),
+                    unselectedLabelStyle: TextStyle(
+                        color: isDarkTheme ? Colors.black : Colors.white,
+                        fontWeight: FontWeight.normal),
+                    items: [
+                      _buildBottomNavigationBarItem(
+                        isDarkTheme: isDarkTheme,
+                        label: 'Home',
+                        unselectedIconPath:
+                            'assets/images/tabbar/homeTab/home_black.png',
+                        unselectedIconPathDarkMode:
+                            'assets/images/tabbar/homeTab/home_white.png',
+                        selectedIconPath:
+                            'assets/images/tabbar/homeTab/home_black_fill.png',
+                        selectedIconPathDarkMode:
+                            'assets/images/tabbar/homeTab/home_white_fill.png',
+                        index: 0,
+                      ),
+                      _buildBottomNavigationBarItem(
+                        isDarkTheme: isDarkTheme,
+                        label: 'Schedule',
+                        unselectedIconPath:
+                            'assets/images/tabbar/scheduleTab/schedule_black.png',
+                        unselectedIconPathDarkMode:
+                            'assets/images/tabbar/scheduleTab/schedule_white.png',
+                        selectedIconPath:
+                            'assets/images/tabbar/scheduleTab/schedule_black_fill.png',
+                        selectedIconPathDarkMode:
+                            'assets/images/tabbar/scheduleTab/schedule_white_fill.png',
+                        index: 1,
+                      ),
+                      _buildBottomNavigationBarItem(
+                        isDarkTheme: isDarkTheme,
+                        label: 'D-day',
+                        unselectedIconPath:
+                            'assets/images/tabbar/dDayTab/dday_black.png',
+                        unselectedIconPathDarkMode:
+                            'assets/images/tabbar/dDayTab/dday_white.png',
+                        selectedIconPath:
+                            'assets/images/tabbar/dDayTab/dday_black_fill.png',
+                        selectedIconPathDarkMode:
+                            'assets/images/tabbar/dDayTab/dday_white_fill.png',
+                        index: 2,
+                      ),
+                      _buildBottomNavigationBarItem(
+                        isDarkTheme: isDarkTheme,
+                        label: 'Settings',
+                        unselectedIconPath:
+                            'assets/images/tabbar/settingsTab/setting_black.png',
+                        unselectedIconPathDarkMode:
+                            'assets/images/tabbar/settingsTab/setting_white.png',
+                        selectedIconPath:
+                            'assets/images/tabbar/settingsTab/setting_black_fill.png',
+                        selectedIconPathDarkMode:
+                            'assets/images/tabbar/settingsTab/setting_white_fill.png',
+                        index: 3,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

@@ -7,8 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:make_my_day/feature/ddayFeature/domain/entities/dday_entity.dart';
-import 'package:make_my_day/feature/scheduleFeature/domain/entities/schedule_entity.dart';
 import 'package:make_my_day/infrastructure/manager/realm_schema_version_manager.dart';
 
 import 'package:make_my_day/main.dart';

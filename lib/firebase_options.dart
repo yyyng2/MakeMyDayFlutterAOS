@@ -57,6 +57,7 @@ class DefaultFirebaseOptions {
     appId: '1:168273438981:android:38a0ab011b75ba36aa2f6c',
     messagingSenderId: '168273438981',
     projectId: 'makemyday-d00f1',
-    storageBucket: 'makemyday-d00f1.appspot.com',
+    storageBucket: 'makemyday-d00f1.firebasestorage.app',
   );
+
 }

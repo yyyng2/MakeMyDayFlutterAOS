@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -11,12 +12,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:realm/realm.dart';
 
 import 'feature/commonFeature/presentation/navigation/app_router.dart';
-import 'feature/ddayFeature/domain/entities/dday_entity.dart';
-import 'feature/scheduleFeature/domain/entities/schedule_entity.dart';
 import 'firebase_options.dart';
 import 'infrastructure/service/background_service.dart';
 
-Future<void> main() async {
+Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -24,10 +23,8 @@ Future<void> main() async {
   await initializeDateFormatting();
   await EasyLocalization.ensureInitialized();
   await MobileAds.instance.initialize();
-
   final config = RealmSchemaVersionManager.getConfig();
   final realm = Realm(config);
-
   runApp(
       EasyLocalization(
           supportedLocales: const [
@@ -43,27 +40,25 @@ Future<void> main() async {
 
 class MyApp extends StatefulWidget {
   final Realm realm;
-
   const MyApp({super.key, required this.realm});
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-
 class _MyAppState extends State<MyApp> {
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("addPostFrameCallback");
       askPermission();
     });
   }
 
-  Future<void> askPermission() async {
+  Future askPermission() async {
     if (await Permission.notification.request().isGranted) {
       await initializeBackgroundService();
     } else {
@@ -79,8 +74,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final uri = Uri.parse(WidgetsBinding.instance.window.defaultRouteName);
+    final defaultRoute = PlatformDispatcher.instance.defaultRouteName;
+    final uri = Uri.parse(defaultRoute);
     print('uri: $uri');
+
     if (uri.toString().contains('MakeMyDayAppWidget')) {
       final widgetId = uri.pathSegments.last;
       return MaterialApp(
@@ -104,6 +101,9 @@ class _MyAppState extends State<MyApp> {
         debugShowCheckedModeBanner: false,
         onGenerateRoute: AppRouter.generateRoute,
         initialRoute: AppRouter.splash,
+        navigatorObservers: [
+          FirebaseAnalyticsObserver(analytics: analytics),
+        ],
       );
     }
   }

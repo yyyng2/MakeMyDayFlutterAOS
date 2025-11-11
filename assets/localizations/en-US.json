@@ -6,6 +6,8 @@
   "commonConfirmDelete": "Do you want to delete it?",
   "commonDelete": "Delete",
 
+  "backButtonAlert":  "Tap back again to exit the app.",
+
   "updateRequiredTitle": "Update Required",
   "updateRequiredContents": "A new version is available. Please update the app.",
   "updateRequiredGoStoreButtonTitle": "Go to store",
