@@ -268,11 +268,12 @@ class ScheduleScreenState extends State<ScheduleScreen> {
   Widget _buildCalendarGrid(
       List<ScheduleEntity> scheduleItems, bool isDarkTheme, bool isWeekMode) {
     final dates = isWeekMode ? _extractWeekDates() : extractDates();
+    final rowCount = isWeekMode ? 1 : (dates.length / 7).ceil();
 
-    return Expanded(
-      child: Column(
-        children: [
-          Expanded(
+    return Column(
+      children: [
+        SizedBox(
+          height: rowCount * 60.0,
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -342,8 +343,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
             },
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildScheduleList(
