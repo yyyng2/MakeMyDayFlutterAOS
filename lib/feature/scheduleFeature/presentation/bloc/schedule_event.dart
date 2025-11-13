@@ -46,3 +46,25 @@ class DeleteScheduleItem extends ScheduleEvent {
   @override
   List<Object?> get props => [id, month];
 }
+
+class ToggleCalendarMode extends ScheduleEvent {
+  const ToggleCalendarMode();
+}
+
+class SearchScheduleItems extends ScheduleEvent {
+  final String query;
+
+  const SearchScheduleItems(this.query);
+
+  @override
+  List<Object?> get props => [query];
+}
+
+class ToggleSearchPopup extends ScheduleEvent {
+  final bool isVisible;
+
+  const ToggleSearchPopup(this.isVisible);
+
+  @override
+  List<Object?> get props => [isVisible];
+}

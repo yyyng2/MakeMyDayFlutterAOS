@@ -97,54 +97,53 @@ class ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //     automaticallyImplyLeading: false,
-      // title: const Text('Schedule')
-      // ),
-      body:
-          // Stack(
-          //   children: [
-          // Positioned.fill(
-          //   child: Image.asset(
-          //     'assets/images/background/background.png',
-          //     fit: BoxFit.cover,
-          //   ),
-          // ),
-          BlocBuilder<ScheduleBloc, ScheduleState>(
+      body: BlocBuilder<ScheduleBloc, ScheduleState>(
         bloc: scheduleBloc,
         builder: (context, state) {
           if (state is ScheduleInitial) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ScheduleLoaded) {
-            return Stack(children: [
-              Positioned.fill(
+            return Stack(
+              children: [
+                Positioned.fill(
                   child: Image.asset(
                     state.isDarkTheme
                         ? 'assets/images/background/background_black.png'
                         : 'assets/images/background/background.png',
                     fit: BoxFit.cover,
-                  )
-              ),
-              Column(
-                children: [
-                  _buildHeader(state.isDarkTheme),
-                  _buildDaysOfWeek(state.isDarkTheme),
-                  _buildCalendarGrid(state.scheduleItems, state.isDarkTheme),
-                  _buildScheduleList(
-                      state.scheduleTargetItems, state.isDarkTheme),
-                ],
-              )
-            ]);
+                  ),
+                ),
+                Column(
+                  children: [
+                    _buildHeader(state.isDarkTheme),
+                    _buildDaysOfWeek(state.isDarkTheme),
+                    _buildCalendarGrid(state.scheduleItems, state.isDarkTheme, state.isWeekMode),
+                    _buildScheduleList(state.scheduleTargetItems, state.isDarkTheme),
+                  ],
+                ),
+                if (state.isSearchVisible)
+                  _buildSearchPopup(state.searchResults, state.isDarkTheme, ''),
+                Positioned(
+                  right: 16,
+                  bottom: 160,
+                  child: FloatingActionButton(
+                    heroTag: 'searchButton',
+                    onPressed: () {
+                      scheduleBloc.add(const ToggleSearchPopup(true));
+                    },
+                    backgroundColor: Colors.white,
+                    child: const Icon(Icons.search, color: Colors.black),
+                  ),
+                ),
+              ],
+            );
           } else if (state is ScheduleError) {
-            return Center(
-                child: Text('Failed to load schedules: ${state.message}'));
+            return Center(child: Text('Failed to load schedules: ${state.message}'));
           } else {
             return const Center(child: Text('Unknown state'));
           }
         },
       ),
-      //   ],
-      // ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'scheduleScreen',
         onPressed: () {
@@ -200,7 +199,8 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                     targetMonth -= 1;
                     if (targetMonth < 1) {
                       targetMonth = 12;
-                      targetYear -= 1;  // Decrement year when moving from January to December
+                      targetYear -=
+                          1; // Decrement year when moving from January to December
                     }
                     handleMonthChange();
                   });
@@ -216,7 +216,8 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                     targetMonth += 1;
                     if (targetMonth > 12) {
                       targetMonth = 1;
-                      targetYear += 1;  // Increment year when moving from December to January
+                      targetYear +=
+                          1; // Increment year when moving from December to January
                     }
                     handleMonthChange();
                   });
@@ -259,69 +260,88 @@ class ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
+  List<DateTime> _extractWeekDates() {
+    final startOfWeek = currentDate.subtract(Duration(days: currentDate.weekday % 7));
+    return List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
+  }
+
   Widget _buildCalendarGrid(
-      List<ScheduleEntity> scheduleItems, bool isDarkTheme) {
-    final dates = extractDates();
+      List<ScheduleEntity> scheduleItems, bool isDarkTheme, bool isWeekMode) {
+    final dates = isWeekMode ? _extractWeekDates() : extractDates();
 
     return Expanded(
-      child: GridView.builder(
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
-        itemCount: dates.length,
-        itemBuilder: (context, index) {
-          final date = dates[index];
+      child: Column(
+        children: [
+          Expanded(
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7),
+              itemCount: dates.length,
+              itemBuilder: (context, index) {
+                final date = dates[index];
 
-          if (date.year == 0) {
-            return const SizedBox
-                .shrink(); // Empty space for previous month days
-          }
+                if (date.year == 0) {
+                  return const SizedBox.shrink();
+                }
 
-          final isSelected = date.isSameDay(currentDate);
-          final hasTask = scheduleItems.any((item) {
-            final isSame = item.date.toLocal().isSameDay(date);
-            // print('item.date: ${item.date.toLocal()}\ndate: $date');
-            return isSame;
-          });
+                final isSelected = date.isSameDay(currentDate);
+                final hasTask = scheduleItems
+                    .any((item) => item.date.toLocal().isSameDay(date));
 
-          return GestureDetector(
-            onTap: () {
-              handleDateChange(date);
-              scheduleBloc.add(FetchScheduleItemsByDate(date));
-            },
-            child: Container(
-              margin: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.blueAccent : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    date.day.toString(),
-                    style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isDarkTheme
-                          ? isSelected
-                              ? Colors.black
-                              : Colors.white
-                          : isSelected
-                              ? Colors.white
-                              : Colors.black,
+                return GestureDetector(
+                  onTap: () {
+                    handleDateChange(date);
+                    scheduleBloc.add(FetchScheduleItemsByDate(date));
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color:
+                          isSelected ? Colors.blueAccent : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          date.day.toString(),
+                          style: TextStyle(
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isDarkTheme
+                                ? isSelected
+                                    ? Colors.black
+                                    : Colors.white
+                                : isSelected
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
+                        ),
+                        if (hasTask)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 2.0),
+                            child: CircleAvatar(
+                                radius: 2, backgroundColor: Colors.red),
+                          ),
+                      ],
                     ),
                   ),
-                  if (hasTask)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2.0),
-                      child:
-                          CircleAvatar(radius: 2, backgroundColor: Colors.red),
-                    ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
+          ),
+          IconButton(
+            icon: Icon(
+              isWeekMode ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+              color: isDarkTheme ? Colors.white : Colors.black,
+            ),
+            onPressed: () {
+              scheduleBloc.add(const ToggleCalendarMode());
+            },
+          ),
+        ],
       ),
     );
   }
@@ -415,8 +435,7 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                               builder: (BuildContext context) {
                                 return AlertDialog(
                                   title: Text("commonConfirmDeleteTitle".tr()),
-                                  content: Text(
-                                      "commonConfirmDelete".tr()),
+                                  content: Text("commonConfirmDelete".tr()),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(context),
@@ -427,12 +446,14 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                                       onPressed: () {
                                         scheduleBloc.add(DeleteScheduleItem(
                                             item.id, currentDate));
-                                        FlutterBackgroundService().invoke('updateData');
+                                        FlutterBackgroundService()
+                                            .invoke('updateData');
                                         Navigator.pop(
                                             context); // Close the dialog
                                       },
                                       child: Text("commonDelete".tr(),
-                                          style: const TextStyle(color: Colors.red)),
+                                          style: const TextStyle(
+                                              color: Colors.red)),
                                     ),
                                   ],
                                 );
@@ -442,6 +463,127 @@ class ScheduleScreenState extends State<ScheduleScreen> {
                         )));
               },
             ),
+    );
+  }
+
+  Widget _buildSearchPopup(
+      List<ScheduleEntity> searchResults, bool isDarkTheme, String searchQuery) {
+    return Positioned.fill(
+      child: GestureDetector(
+        onTap: () => scheduleBloc.add(const ToggleSearchPopup(false)),
+        child: Container(
+          color: Colors.black.withOpacity(0.3),
+          child: Center(
+            child: GestureDetector(
+              onTap: () {}, // 팝업 내부 탭 무시
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: 350,
+                margin: const EdgeInsets.only(bottom: 150),
+                decoration: BoxDecoration(
+                  color: isDarkTheme ? Colors.black87 : Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        autofocus: true,
+                        style: TextStyle(
+                          color: isDarkTheme ? Colors.white : Colors.black,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'scheduleFindTitle'.tr(),
+                          hintStyle: TextStyle(
+                            color: isDarkTheme ? Colors.grey : Colors.grey[600],
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                          ),
+                          suffixIcon: searchQuery.isNotEmpty
+                              ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: isDarkTheme ? Colors.white : Colors.black,
+                            ),
+                            onPressed: () {
+                              scheduleBloc.add(const SearchScheduleItems(''));
+                            },
+                          )
+                              : null,
+                          filled: true,
+                          fillColor: isDarkTheme ? Colors.grey[800] : Colors.grey[200],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          scheduleBloc.add(SearchScheduleItems(value));
+                        },
+                      ),
+                    ),
+                    Divider(color: isDarkTheme ? Colors.grey[700] : Colors.grey[300]),
+                    Expanded(
+                      child: searchResults.isEmpty
+                          ? Center(
+                        child: Text(
+                          'scheduleEmpty'.tr(),
+                          style: TextStyle(
+                            color: isDarkTheme ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      )
+                          : ListView.builder(
+                        itemCount: searchResults.length,
+                        itemBuilder: (context, index) {
+                          final item = searchResults[index];
+                          return ListTile(
+                            title: Text(
+                              item.title,
+                              style: TextStyle(
+                                color: isDarkTheme ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            subtitle: Text(
+                              DateFormat('yyyy-MM-dd a hh:mm').format(item.date.toLocal()),
+                              style: TextStyle(
+                                color: isDarkTheme ? Colors.grey : Colors.grey[600],
+                              ),
+                            ),
+                            onTap: () {
+                              scheduleBloc.add(const ToggleSearchPopup(false));
+                              Navigator.pushNamed(
+                                context,
+                                AppRouter.scheduleWrite,
+                                arguments: {
+                                  'isEdit': true,
+                                  'scheduleObject': item,
+                                  'scheduleBloc': scheduleBloc,
+                                  'isDarkTheme': isDarkTheme,
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

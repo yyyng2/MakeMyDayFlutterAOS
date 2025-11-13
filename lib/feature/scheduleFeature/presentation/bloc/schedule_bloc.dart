@@ -19,6 +19,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<AddScheduleItem>(_onAddScheduleItem);
     on<UpdateScheduleItem>(_onUpdateScheduleItem);
     on<DeleteScheduleItem>(_onDeleteScheduleItem);
+    on<ToggleCalendarMode>(_onToggleCalendarMode); // 추가
+    on<SearchScheduleItems>(_onSearchScheduleItems); // 추가
+    on<ToggleSearchPopup>(_onToggleSearchPopup); // 추가
   }
 
   Future<void> _onFetchScheduleItemsByDate(
@@ -28,7 +31,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       final items = await usecase.fetchScheduleItems(event.date);
       final targetItems = await usecase.fetchScheduleItemsByDate(event.date);
       final isDarkTheme = await commonUsecase.getTheme();
-      emit(ScheduleLoaded(items, targetItems, isDarkTheme));
+
+      final currentState = state;
+      final isWeekMode = currentState is ScheduleLoaded ? currentState.isWeekMode : false;
+      final searchResults = currentState is ScheduleLoaded ? currentState.searchResults : <ScheduleEntity>[];
+      final isSearchVisible = currentState is ScheduleLoaded ? currentState.isSearchVisible : false;
+
+      emit(ScheduleLoaded(items, targetItems, isDarkTheme,
+          isWeekMode: isWeekMode,
+          searchResults: searchResults,
+          isSearchVisible: isSearchVisible));
     } catch (e) {
       print('error fetchScheduleItemsByDate: $e');
       emit(const ScheduleError("Failed to load schedule items"));
@@ -65,6 +77,65 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       add(FetchScheduleItemsByDate(event.month));
     } catch (e) {
       emit(const ScheduleError("Failed to delete schedule item"));
+    }
+  }
+
+  Future<void> _onToggleCalendarMode(
+      ToggleCalendarMode event, Emitter<ScheduleState> emit) async {
+    if (state is ScheduleLoaded) {
+      final currentState = state as ScheduleLoaded;
+      emit(ScheduleLoaded(
+        currentState.scheduleItems,
+        currentState.scheduleTargetItems,
+        currentState.isDarkTheme,
+        isWeekMode: !currentState.isWeekMode,
+        searchResults: currentState.searchResults,
+        isSearchVisible: currentState.isSearchVisible,
+      ));
+    }
+  }
+
+  Future<void> _onSearchScheduleItems(
+      SearchScheduleItems event, Emitter<ScheduleState> emit) async {
+    if (state is ScheduleLoaded) {
+      final currentState = state as ScheduleLoaded;
+      if (event.query.isEmpty) {
+        emit(ScheduleLoaded(
+          currentState.scheduleItems,
+          currentState.scheduleTargetItems,
+          currentState.isDarkTheme,
+          isWeekMode: currentState.isWeekMode,
+          searchResults: [],
+          isSearchVisible: currentState.isSearchVisible,
+        ));
+      } else {
+        final results = currentState.scheduleItems
+            .where((item) => item.title.toLowerCase().contains(event.query.toLowerCase()))
+            .toList();
+        emit(ScheduleLoaded(
+          currentState.scheduleItems,
+          currentState.scheduleTargetItems,
+          currentState.isDarkTheme,
+          isWeekMode: currentState.isWeekMode,
+          searchResults: results,
+          isSearchVisible: currentState.isSearchVisible,
+        ));
+      }
+    }
+  }
+
+  Future<void> _onToggleSearchPopup(
+      ToggleSearchPopup event, Emitter<ScheduleState> emit) async {
+    if (state is ScheduleLoaded) {
+      final currentState = state as ScheduleLoaded;
+      emit(ScheduleLoaded(
+        currentState.scheduleItems,
+        currentState.scheduleTargetItems,
+        currentState.isDarkTheme,
+        isWeekMode: currentState.isWeekMode,
+        searchResults: event.isVisible ? currentState.searchResults : [],
+        isSearchVisible: event.isVisible,
+      ));
     }
   }
 }
